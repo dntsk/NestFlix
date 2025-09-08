@@ -1,13 +1,58 @@
 {% extends 'catalog/base.html' %}
-
 {% block title %}Вход{% endblock %}
-
 {% block content %}
-<h1>Вход</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Войти</button>
-</form>
-<p><a href="{% url 'password_reset' %}">Забыли пароль?</a></p>
+<style>
+input[type="text"], input[type="password"] {
+    height: 2rem;
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+}
+</style>
+<div
+    style="
+        max-width: 400px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: var(--secondary);
+        border-radius: 8px;
+    "
+>
+    <h2 style="text-align: center; margin-bottom: 1.5rem">Вход</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div style="margin-bottom: 1rem">
+            <label
+                for="{{ form.username.id_for_label }}"
+                style="display: block; margin-bottom: 0.5rem; font-weight: bold"
+                >{{ form.username.label }}</label
+            >
+            {{ form.username }}
+            {% if form.username.errors %}
+            <small style="color: #d73a49">{{ form.username.errors }}</small>
+            {% endif %}
+        </div>
+        <div style="margin-bottom: 1rem">
+            <label
+                for="{{ form.password.id_for_label }}"
+                style="display: block; margin-bottom: 0.5rem; font-weight: bold"
+                >{{ form.password.label }}</label
+            >
+            {{ form.password }}
+            {% if form.password.errors %}
+            <small style="color: #d73a49">{{ form.password.errors }}</small>
+            {% endif %}
+        </div>
+        {% if form.non_field_errors %}
+        <div style="margin-bottom: 1rem; color: #d73a49">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+        <button type="submit" style="width: 100%; margin-top: 1rem">
+            Войти
+        </button>
+    </form>
+    <p style="text-align: center; margin-top: 1rem">
+        <a href="{% url 'password_reset' %}">Забыли пароль?</a>
+    </p>
+</div>
 {% endblock %}

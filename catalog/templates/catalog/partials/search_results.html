@@ -1,15 +1,25 @@
+<div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
 {% for result in results %}
-<article>
+<article style="text-align: center; padding: 1rem; background-color: #ffffff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s; display: flex; flex-direction: column;">
     {% if result.poster_path %}
-        <img src="https://image.tmdb.org/t/p/w200{{ result.poster_path }}" alt="{{ result.title }}">
+        <img src="https://image.tmdb.org/t/p/w200{{ result.poster_path }}" alt="{{ result.title }}" style="width: 100%; max-width: 200px; border-radius: 8px; margin-bottom: 0.5rem; transition: transform 0.2s;">
+    {% else %}
+        <div style="width: 200px; height: 300px; background: var(--border); display: flex; align-items: center; justify-content: center; border-radius: 8px; margin: 0 auto 0.5rem; transition: transform 0.2s;">
+            Нет постера
+        </div>
     {% endif %}
-    <h4>{{ result.title }} {% if result.release_date %}({{ result.release_date|slice:":4" }}){% endif %} <small>({{ result.media_type|title }})</small></h4>
-    <p>{{ result.overview|truncatewords:20 }}</p>
-    <button hx-post="{% url 'catalog:add_movie' result.media_type result.id %}" hx-target="closest article" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>+ Добавить в мою коллекцию</button>
+    <h5 style="margin: 0.5rem 0;">{{ result.title }} {% if result.release_date %}({{ result.release_date|slice:":4" }}){% endif %} <small>({{ result.media_type|title }})</small></h5>
+    <p style="flex: 1;">{{ result.overview|truncatewords:20 }}</p>
+    {% if not result.is_in_collection %}
+    <button hx-post="{% url 'catalog:add_movie' result.media_type result.id %}" hx-target="closest article" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' style="margin-top: auto; padding: 0.25rem 0.5rem; font-size: 0.875rem;">Добавить в коллекцию</button>
+    {% else %}
+    <a href="{% url 'catalog:movie_detail' result.id %}" style="margin-top: auto; padding: 0.25rem 0.5rem; font-size: 0.875rem; display: inline-block; text-decoration: none; color: var(--primary); border: 1px solid var(--primary); border-radius: 4px;">Уже в коллекции</a>
+    {% endif %}
 </article>
 {% empty %}
 <p>Ничего не найдено.</p>
 {% endfor %}
+</div>
 <script>
 htmx.on('htmx:beforeRequest', function(evt) {
     console.log('HTMX add request:', evt.detail.requestConfig);

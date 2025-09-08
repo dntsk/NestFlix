@@ -3,6 +3,13 @@
 {% block title %}Поиск фильмов{% endblock %}
 
 {% block content %}
+<style>
+input[type="text"] {
+    height: 2rem;
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+}
+</style>
 <h1>Поиск фильмов</h1>
 <form hx-get="{% url 'catalog:movie_search' %}" hx-target="#search-results" hx-trigger="input delay:500ms">
     <input type="text" name="query" placeholder="Начните вводить название фильма..." />

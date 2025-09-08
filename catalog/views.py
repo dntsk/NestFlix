@@ -31,6 +31,14 @@ def movie_search(request):
         if query:
             results = search_movies(query, tmdb_api_key)
             print(f"Results count: {len(results)}")
+            # Add is_in_collection flag
+            for result in results:
+                movie_exists = Movie.objects.filter(tmdb_id=result['id']).exists()
+                if movie_exists:
+                    movie = Movie.objects.get(tmdb_id=result['id'])
+                    result['is_in_collection'] = UserRating.objects.filter(user=request.user, movie=movie).exists()
+                else:
+                    result['is_in_collection'] = False
             return render(request, 'catalog/partials/search_results.html', {'results': results})
         else:
             return render(request, 'catalog/partials/search_results.html', {'results': []})
