@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Трекер фильмов{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <script src="https://unpkg.com/htmx.org@2.0.0"></script>
+    <style>
+        :root {
+            --primary: #4a90e2; /* Светло-синий */
+            --secondary: #f5f7fa; /* Очень светло-серый */
+            --accent: #ff6b35; /* Теплый оранжевый */
+            --text: #2c3e50; /* Темно-синий текст */
+            --muted: #7f8c8d; /* Серый для второстепенного текста */
+            --border: #ecf0f1; /* Светло-серый бордер */
+        }
+        body {
+            background-color: var(--secondary);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+        }
+        nav {
+            background-color: #ffffff;
+            border-bottom: 2px solid var(--border);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        nav a {
+            color: var(--primary);
+            font-weight: 500;
+        }
+        nav a:hover {
+            color: var(--accent);
+        }
+        h1, h2, h3, h4, h5 {
+            color: var(--text);
+        }
+        h1 {
+            font-size: 1.5rem;
+        }
+        nav strong {
+            font-size: 1rem;
+        }
+        h2 {
+            font-size: 1.25rem;
+        }
+        h3 {
+            font-size: 1.1rem;
+        }
+        article {
+            background-color: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        article:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        input, button {
+            border-color: var(--border);
+            border-radius: 6px;
+        }
+        input:focus, button:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+        button {
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
+            padding: 0.5rem 1rem;
+        }
+        button:hover {
+            background-color: #357abd;
+        }
+        a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        a:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .grid {
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="container-fluid">
+        <ul>
+            <li><strong><a href="{% url 'catalog:home' %}">Трекер фильмов</a></strong></li>
+        </ul>
+         <ul>
+              {% if user.is_authenticated %}
+                  <li><a href="{% url 'catalog:movie_search' %}">Добавить фильм</a></li>
+                  <li><a href="{% url 'catalog:user_settings' %}">Настройки</a></li>
+                  <!-- Индикатор активного импорта -->
+                  <li id="import-indicator" style="display: none;">
+                      <div style="width: 16px; height: 16px; border: 2px solid var(--muted); border-top: 2px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                  </li>
+                   <li><a href="{% url 'logout' %}?next={% url 'catalog:home' %}">Выйти</a></li>
+              {% else %}
+                 <li style="margin-left: auto;"><a href="{% url 'login' %}" style="background: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: 4px;">Войти</a></li>
+             {% endif %}
+         </ul>
+    </nav>
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Глобальный скрипт для отслеживания импорта -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const importIndicator = document.getElementById('import-indicator');
+        let currentTaskId = localStorage.getItem('active_import_task');
+        let statusCheck = null;
+
+        // Функция проверки статуса импорта
+        function checkImportStatus() {
+            if (!currentTaskId) return;
+
+            fetch(`/import-status/${currentTaskId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        // Задача не найдена или ошибка
+                        clearInterval(statusCheck);
+                        hideImportIndicator();
+                        return;
+                    }
+
+                    showImportIndicator();
+
+                    if (data.status === 'completed' || data.status === 'failed') {
+                        // Импорт завершен
+                        clearInterval(statusCheck);
+                        hideImportIndicator();
+
+                        // Показываем уведомление
+                        showNotification(
+                            data.status === 'completed' ?
+                            'Импорт завершен успешно!' :
+                            'Ошибка импорта: ' + (data.error_message || 'Неизвестная ошибка')
+                        );
+
+                        // Очищаем localStorage
+                        localStorage.removeItem('active_import_task');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking import status:', error);
+                    clearInterval(statusCheck);
+                    hideImportIndicator();
+                });
+        }
+
+        function showImportIndicator() {
+            if (importIndicator) {
+                importIndicator.style.display = 'block';
+            }
+        }
+
+        function hideImportIndicator() {
+            if (importIndicator) {
+                importIndicator.style.display = 'none';
+            }
+        }
+
+        function showNotification(message) {
+            // Простое уведомление
+            alert(message);
+        }
+
+        // Запускаем проверку статуса при загрузке страницы
+        if (currentTaskId) {
+            showImportIndicator();
+            statusCheck = setInterval(checkImportStatus, 5000); // Проверяем каждые 5 секунд
+        }
+
+        // Слушаем событие запуска импорта (для других страниц)
+        window.addEventListener('importStarted', function(event) {
+            currentTaskId = event.detail.taskId;
+            localStorage.setItem('active_import_task', currentTaskId);
+            showImportIndicator();
+            if (statusCheck) clearInterval(statusCheck);
+            statusCheck = setInterval(checkImportStatus, 5000);
+        });
+    });
+    </script>
+</body>
+</html>

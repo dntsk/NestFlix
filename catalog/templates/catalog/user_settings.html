@@ -1,0 +1,185 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}Настройки{% endblock %}
+
+{% block content %}
+<h1>Настройки API</h1>
+<p>Настройте ключи API для подключения к внешним сервисам.</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label for="tmdb_api_key">TMDB API Key:</label>
+    <input type="text" id="tmdb_api_key" name="tmdb_api_key" value="{{ settings.tmdb_api_key }}" placeholder="Введите ваш TMDB API Key" required>
+    <small>Получите ключ на <a href="https://www.themoviedb.org/settings/api" target="_blank">themoviedb.org</a></small>
+
+    <label for="trakt_username">Trakt.tv Username:</label>
+    <input type="text" id="trakt_username" name="trakt_username" value="{{ settings.trakt_username }}" placeholder="Ваш username на Trakt.tv">
+
+    <label for="trakt_client_id">Trakt.tv Client ID:</label>
+    <input type="text" id="trakt_client_id" name="trakt_client_id" value="{{ settings.trakt_client_id }}" placeholder="Client ID вашего приложения">
+    <small>Создайте приложение на <a href="https://trakt.tv/oauth/applications" target="_blank">trakt.tv</a></small>
+
+    <button type="submit">Сохранить настройки</button>
+</form>
+
+{% if settings.tmdb_api_key and settings.trakt_username and settings.trakt_client_id %}
+<h2>Импорт данных</h2>
+<p>Импортируйте просмотренные фильмы и оценки из Trakt.tv</p>
+
+<!-- Индикатор импорта -->
+<div id="import-status" style="display: none; margin: 1rem 0; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; background-color: var(--secondary);">
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <div class="spinner" style="width: 16px; height: 16px; border: 2px solid var(--muted); border-top: 2px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <span id="status-text" style="color: var(--text); font-weight: 500;">Импорт выполняется...</span>
+    </div>
+</div>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
+<form method="post" action="{% url 'catalog:import_trakt' %}">
+    {% csrf_token %}
+    <button type="submit" id="import-btn">Импортировать из Trakt.tv</button>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const importBtn = document.getElementById('import-btn');
+    const statusDiv = document.getElementById('import-status');
+    const statusText = document.getElementById('status-text');
+
+    let currentTaskId = null;
+    let statusCheck = null;
+
+    // Функция проверки статуса
+    function checkStatus() {
+        if (!currentTaskId) return;
+
+        console.log('Checking status for task:', currentTaskId);
+
+        fetch(`/import-status/${currentTaskId}/`)
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Received data:', data);
+
+                if (data.error) {
+                    console.log('Error in data:', data.error);
+                    clearInterval(statusCheck);
+                    hideImportStatus();
+                    return;
+                }
+
+                statusDiv.style.display = 'block';
+
+                switch(data.status) {
+                    case 'pending':
+                        statusText.textContent = 'Импорт в процессе выполнения...';
+                        break;
+                    case 'running':
+                        console.log('Running status - imported:', data.imported_count, 'total:', data.total_items);
+                        if (data.imported_count !== undefined && data.total_items !== undefined) {
+                            statusText.textContent = `Импорт выполняется: ${data.imported_count}/${data.total_items} фильмов`;
+                        } else {
+                            statusText.textContent = 'Импорт выполняется...';
+                        }
+                        break;
+                    case 'completed':
+                        statusText.textContent = 'Импорт завершен!';
+                        importBtn.disabled = false;
+                        importBtn.textContent = 'Импортировать из Trakt.tv';
+                        clearInterval(statusCheck);
+                        localStorage.removeItem('active_import_task');
+                        setTimeout(() => {
+                            statusDiv.style.display = 'none';
+                        }, 3000);
+                        break;
+                    case 'failed':
+                        statusText.textContent = 'Ошибка импорта';
+                        importBtn.disabled = false;
+                        importBtn.textContent = 'Импортировать из Trakt.tv';
+                        clearInterval(statusCheck);
+                        localStorage.removeItem('active_import_task');
+                        setTimeout(() => {
+                            statusDiv.style.display = 'none';
+                        }, 5000);
+                        break;
+                }
+            })
+            .catch(error => {
+                console.error('Error checking status:', error);
+                clearInterval(statusCheck);
+                hideImportStatus();
+            });
+    }
+
+    function hideImportStatus() {
+        statusDiv.style.display = 'none';
+        localStorage.removeItem('active_import_task');
+    }
+
+    // Обработчик формы
+    document.querySelector('form[action*="import-trakt"]').addEventListener('submit', function(e) {
+        e.preventDefault();
+        importBtn.disabled = true;
+        importBtn.textContent = 'Запуск...';
+
+        // Отправляем AJAX запрос
+        fetch('/import-trakt/', {
+            method: 'POST',
+            body: new FormData(this),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                importBtn.disabled = false;
+                importBtn.textContent = 'Импортировать из Trakt.tv';
+                return;
+            }
+
+            // Получаем реальный task_id от сервера
+            currentTaskId = data.task_id;
+
+            // Сохраняем в localStorage для отслеживания на других страницах
+            localStorage.setItem('active_import_task', currentTaskId);
+
+            // Отправляем событие для других страниц
+            window.dispatchEvent(new CustomEvent('importStarted', {
+                detail: { taskId: currentTaskId }
+            }));
+
+            // Показываем статус и начинаем проверку
+            statusDiv.style.display = 'block';
+            statusCheck = setInterval(checkStatus, 3000); // Проверяем каждые 3 секунды
+        })
+        .catch(error => {
+            console.error('Error starting import:', error);
+            alert('Ошибка запуска импорта');
+            importBtn.disabled = false;
+            importBtn.textContent = 'Импортировать из Trakt.tv';
+        });
+    });
+
+    // Проверяем, есть ли активный импорт при загрузке страницы
+    const savedTaskId = localStorage.getItem('active_import_task');
+    if (savedTaskId) {
+        currentTaskId = savedTaskId;
+        statusDiv.style.display = 'block';
+        statusCheck = setInterval(checkStatus, 3000);
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}Недавно просмотренные фильмы{% endblock %}
+
+{% block content %}
+<h1>Недавно просмотренные фильмы</h1>
+<p>Фильмы, которые недавно смотрели пользователи системы</p>
+
+{% if movies %}
+<div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; justify-content: center;">
+    {% for movie in movies %}
+    <article style="text-align: center; padding: 1rem; background-color: #ffffff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s; display: flex; flex-direction: column;">
+        {% if movie.data.poster_path %}
+            <a href="{% url 'catalog:movie_detail' movie.tmdb_id %}" style="text-decoration: none;">
+                <img src="https://image.tmdb.org/t/p/w200{{ movie.data.poster_path }}" alt="{{ movie.title }}" style="width: 100%; max-width: 200px; border-radius: 8px; margin-bottom: 0.5rem; transition: transform 0.2s;">
+            </a>
+        {% else %}
+            <a href="{% url 'catalog:movie_detail' movie.tmdb_id %}" style="text-decoration: none;">
+                <div style="width: 200px; height: 300px; background: var(--border); display: flex; align-items: center; justify-content: center; border-radius: 8px; margin: 0 auto 0.5rem; transition: transform 0.2s;">
+                    Нет постера
+                </div>
+            </a>
+        {% endif %}
+        <h5 style="margin: 0.5rem 0;"><a href="{% url 'catalog:movie_detail' movie.tmdb_id %}" style="text-decoration: none; color: var(--text);">{{ movie.title }}</a></h5>
+
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end;">
+            {% if movie.last_watched %}
+                <p style="margin: 0.5rem 0; color: var(--muted); font-size: 0.9rem;"><small>Просмотрен: {{ movie.last_watched|date:"d.m.Y" }}</small></p>
+            {% endif %}
+            {% if movie.avg_rating %}
+                <p style="margin: 0; color: var(--accent); font-weight: bold;">{{ movie.avg_rating|floatformat:1 }}/10</p>
+            {% endif %}
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+<div style="text-align: center; margin-top: 2rem; padding: 2rem; background: var(--secondary); border-radius: 8px;">
+    <h3>Хотите создать свою коллекцию?</h3>
+    <p>Зарегистрируйтесь, чтобы добавлять фильмы, ставить оценки и вести личную статистику.</p>
+    <a href="{% url 'login' %}" role="button" style="margin-top: 1rem;">Войти</a>
+</div>
+{% else %}
+<div style="text-align: center; padding: 2rem;">
+    <p>Пока нет оцененных фильмов в системе.</p>
+</div>
+{% endif %}
+{% endblock %}

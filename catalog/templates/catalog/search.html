@@ -1,0 +1,22 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}Поиск фильмов{% endblock %}
+
+{% block content %}
+<h1>Поиск фильмов</h1>
+<form hx-get="{% url 'catalog:movie_search' %}" hx-target="#search-results" hx-trigger="input delay:500ms">
+    <input type="text" name="query" placeholder="Начните вводить название фильма..." />
+</form>
+<div id="search-results">
+    <div hx-indicator="#indicator" style="display:none; color: var(--muted); text-align: center; padding: 1rem;">Поиск...</div>
+</div>
+<div id="indicator" style="display:none;"></div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('HTMX version:', htmx.version);
+    htmx.on('htmx:beforeRequest', function(evt) {
+        console.log('HTMX request:', evt.detail.requestConfig);
+    });
+});
+</script>
+{% endblock %}

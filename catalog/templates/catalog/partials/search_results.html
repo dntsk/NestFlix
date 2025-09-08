@@ -1,0 +1,17 @@
+{% for result in results %}
+<article>
+    {% if result.poster_path %}
+        <img src="https://image.tmdb.org/t/p/w200{{ result.poster_path }}" alt="{{ result.title }}">
+    {% endif %}
+    <h4>{{ result.title }} {% if result.release_date %}({{ result.release_date|slice:":4" }}){% endif %} <small>({{ result.media_type|title }})</small></h4>
+    <p>{{ result.overview|truncatewords:20 }}</p>
+    <button hx-post="{% url 'catalog:add_movie' result.media_type result.id %}" hx-target="closest article" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>+ Добавить в мою коллекцию</button>
+</article>
+{% empty %}
+<p>Ничего не найдено.</p>
+{% endfor %}
+<script>
+htmx.on('htmx:beforeRequest', function(evt) {
+    console.log('HTMX add request:', evt.detail.requestConfig);
+});
+</script>

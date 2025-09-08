@@ -1,0 +1,14 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}Импорт из Trakt.tv{% endblock %}
+
+{% block content %}
+<h1>Импорт из Trakt.tv</h1>
+<p>Введите ваш username на Trakt.tv для импорта просмотренных фильмов и сериалов.</p>
+<form method="post">
+    {% csrf_token %}
+    <label for="username">Trakt.tv Username:</label>
+    <input type="text" id="username" name="username" value="{{ saved_username }}" required>
+    <button type="submit">Импортировать</button>
+</form>
+{% endblock %}

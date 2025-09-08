@@ -1,0 +1,60 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}{{ movie.title }}{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<div style="display: grid; grid-template-columns: 300px 1fr; gap: 2rem; align-items: start;">
+    <!-- Левая колонка - постер -->
+    <div>
+        {% if poster_path %}
+            <img src="https://image.tmdb.org/t/p/w300{{ poster_path }}" alt="{{ title }}" style="width: 100%; max-width: 300px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        {% else %}
+            <div style="width: 300px; height: 450px; background: var(--border); display: flex; align-items: center; justify-content: center; border-radius: 8px; color: var(--muted);">
+                Нет постера
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Правая колонка - информация -->
+    <div>
+        {% if release_date %}
+            <p style="margin: 0 0 1rem 0;"><strong style="color: var(--primary);">Год:</strong> {{ release_date|slice:":4" }}</p>
+        {% endif %}
+
+        {% if vote_average %}
+            <div style="margin: 0 0 0.5rem 0;">
+                <strong style="color: var(--primary);">Рейтинг TMDB:</strong> <span style="color: var(--accent); font-weight: bold;">{{ vote_average }}/10</span>
+            </div>
+        {% endif %}
+
+        {% if user_rating.rating %}
+            <div style="margin: 0 0 1rem 0;">
+                <strong style="color: var(--primary);">Ваша оценка:</strong> <span style="color: var(--accent); font-weight: bold;">{{ user_rating.rating }}/10</span>
+            </div>
+        {% endif %}
+
+        {% if overview %}
+            <div style="margin: 0 0 2rem 0;">
+                <h3 style="margin: 0 0 0.5rem 0; color: var(--primary);">Описание</h3>
+                <p style="line-height: 1.6; color: var(--text);">{{ overview }}</p>
+            </div>
+        {% endif %}
+
+        <!-- Форма оценки -->
+        <div style="background: var(--secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); margin-top: 1rem;">
+            <h3 style="margin: 0 0 1rem 0; color: var(--primary);">Изменить оценку</h3>
+            <form method="post" style="display: flex; align-items: center; gap: 1rem;">
+                {% csrf_token %}
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="rating" style="font-weight: 500; color: var(--text);">Оценка (1-10):</label>
+                    <input type="number" id="rating" name="rating" min="1" max="10" value="{{ user_rating.rating }}"
+                           style="padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; width: 80px;">
+                </div>
+                <button type="submit" style="padding: 0.4rem 1rem; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; align-self: end; font-size: 0.9rem; width: auto; flex-shrink: 0;">Сохранить</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
