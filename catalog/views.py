@@ -10,6 +10,7 @@ from .tmdb_client import search_movies, get_movie_details
 from .trakt_client import get_watched_movies, get_watched_shows, get_rated_movies, get_rated_shows
 from .tasks import import_trakt_data_task
 import time
+import re
 from django.contrib import messages
 
 @login_required
@@ -24,13 +25,10 @@ def movie_search(request):
     if not tmdb_api_key:
         return render(request, 'catalog/search.html', {'error': 'Настройте TMDB API Key в разделе настроек'})
 
-    print(f"Request method: {request.method}, HX: {request.META.get('HTTP_HX_REQUEST')}, query: {request.GET.get('query')}")
     if request.META.get('HTTP_HX_REQUEST') and 'query' in request.GET:
         query = request.GET.get('query')
-        print(f"Processing query: {query}")
         if query:
             results = search_movies(query, tmdb_api_key)
-            print(f"Results count: {len(results)}")
             # Add is_in_collection flag
             for result in results:
                 movie_exists = Movie.objects.filter(tmdb_id=result['id']).exists()
@@ -56,10 +54,8 @@ def add_movie(request, media_type, tmdb_id):
     if not tmdb_api_key:
         return HttpResponse('<p>Настройте TMDB API Key в разделе настроек</p>', status=400)
 
-    print(f"Add {media_type}: method={request.method}, tmdb_id={tmdb_id}, user={request.user}")
     if request.method in ['POST', 'PUT']:
         movie_data = get_movie_details(media_type, tmdb_id, tmdb_api_key)
-        print(f"Data: {movie_data.get('title', movie_data.get('name', 'No title'))}")
         if not movie_data:
             return HttpResponse('<p>Ошибка загрузки данных.</p>', status=500)
         title = movie_data.get('title', movie_data.get('name', 'Unknown'))
@@ -146,9 +142,28 @@ def user_settings(request):
     settings_obj, created = UserSettings.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
-        settings_obj.tmdb_api_key = request.POST.get('tmdb_api_key', '')
-        settings_obj.trakt_username = request.POST.get('trakt_username', '')
-        settings_obj.trakt_client_id = request.POST.get('trakt_client_id', '')
+        # Валидация и санитизация входных данных
+        tmdb_api_key = request.POST.get('tmdb_api_key', '').strip()
+        trakt_username = request.POST.get('trakt_username', '').strip()
+        trakt_client_id = request.POST.get('trakt_client_id', '').strip()
+        
+        # Проверка формата API ключей
+        if tmdb_api_key and len(tmdb_api_key) != 32:
+            messages.error(request, 'TMDB API Key должен содержать 32 символа')
+            return redirect('catalog:user_settings')
+            
+        if trakt_client_id and len(trakt_client_id) != 64:
+            messages.error(request, 'Trakt Client ID должен содержать 64 символа')
+            return redirect('catalog:user_settings')
+            
+        # Санитизация username - только буквы, цифры, дефисы и подчеркивания
+        if trakt_username and not re.match(r'^[a-zA-Z0-9_-]+$', trakt_username):
+            messages.error(request, 'Trakt username содержит недопустимые символы')
+            return redirect('catalog:user_settings')
+
+        settings_obj.tmdb_api_key = tmdb_api_key
+        settings_obj.trakt_username = trakt_username
+        settings_obj.trakt_client_id = trakt_client_id
         settings_obj.save()
         messages.success(request, 'Настройки сохранены!')
         return redirect('catalog:user_settings')
@@ -174,6 +189,20 @@ def import_from_trakt(request):
         if request.META.get('HTTP_HX_REQUEST') or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'error': 'Заполните все API настройки'}, status=400)
         messages.error(request, 'Заполните все API настройки')
+        return redirect('catalog:user_settings')
+
+    # Проверяем, есть ли уже активная задача импорта для этого пользователя
+    active_tasks = ImportTask.objects.filter(
+        user=request.user,
+        status__in=['pending', 'running']
+    ).exists()
+
+    if active_tasks:
+        if request.META.get('HTTP_HX_REQUEST') or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'error': 'Импорт уже запущен. Дождитесь завершения текущей задачи.'
+            }, status=400)
+        messages.warning(request, 'Импорт уже запущен. Дождитесь завершения текущей задачи.')
         return redirect('catalog:user_settings')
 
     # Создаем запись о задаче
@@ -219,10 +248,8 @@ def import_status(request, task_id):
             'total_items': task.total_items,
             'error_message': task.error_message,
         }
-        print(f"API Status for task {task_id}: {data}")
         return JsonResponse(data)
     except ImportTask.DoesNotExist:
-        print(f"Task {task_id} not found for user {request.user}")
         return JsonResponse({'error': 'Задача не найдена'}, status=404)
 
     context = {

@@ -8,8 +8,8 @@
             Нет постера
         </div>
     {% endif %}
-    <h5 style="margin: 0.5rem 0;">{{ result.title }} {% if result.release_date %}({{ result.release_date|slice:":4" }}){% endif %} <small>({{ result.media_type|title }})</small></h5>
-    <p style="flex: 1;">{{ result.overview|truncatewords:20 }}</p>
+    <h5 style="margin: 0.5rem 0;">{{ result.title|escape }} {% if result.release_date %}({{ result.release_date|slice:":4" }}){% endif %} <small>({{ result.media_type|title|escape }})</small></h5>
+    <p style="flex: 1;">{{ result.overview|truncatewords:20|escape }}</p>
     {% if not result.is_in_collection %}
     <button hx-post="{% url 'catalog:add_movie' result.media_type result.id %}" hx-target="closest article" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' style="margin-top: auto; padding: 0.25rem 0.5rem; font-size: 0.875rem;">Добавить в коллекцию</button>
     {% else %}

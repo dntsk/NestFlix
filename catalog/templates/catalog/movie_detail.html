@@ -3,7 +3,7 @@
 {% block title %}{{ movie.title }}{% endblock %}
 
 {% block content %}
-<h1>{{ title }}</h1>
+<h1>{{ title|escape }}</h1>
 
 <div style="display: grid; grid-template-columns: 300px 1fr; gap: 2rem; align-items: start;">
     <!-- Левая колонка - постер -->
@@ -38,7 +38,7 @@
         {% if overview %}
             <div style="margin: 0 0 2rem 0;">
                 <h3 style="margin: 0 0 0.5rem 0; color: var(--primary);">Описание</h3>
-                <p style="line-height: 1.6; color: var(--text);">{{ overview }}</p>
+                <p style="line-height: 1.6; color: var(--text);">{{ overview|escape }}</p>
             </div>
         {% endif %}
 

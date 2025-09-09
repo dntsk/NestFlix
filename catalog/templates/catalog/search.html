@@ -12,6 +12,7 @@ input[type="text"] {
 </style>
 <h1>Поиск фильмов</h1>
 <form hx-get="{% url 'catalog:movie_search' %}" hx-target="#search-results" hx-trigger="input delay:500ms">
+    {% csrf_token %}
     <input type="text" name="query" placeholder="Начните вводить название фильма..." />
 </form>
 <div id="search-results">

@@ -131,3 +131,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Authentication redirects
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# CSRF security settings
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
+CSRF_TRUSTED_ORIGINS = []  # Add your domain when deploying
