@@ -214,7 +214,7 @@ def import_from_trakt(request):
     )
 
     print(f"Starting import task {task_id} for user {request.user.username}")
-    print(f"Trakt settings: username='{username}', client_id='{trakt_client_id[:10]}...'")
+    print(f"Trakt settings: username='{username}', client_id='{trakt_client_id[:4]}...{trakt_client_id[-4:]}'")
 
     # Запускаем фоновую задачу
     import_trakt_data_task(

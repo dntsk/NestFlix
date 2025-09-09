@@ -19,7 +19,7 @@ class UserRatingAdmin(admin.ModelAdmin):
 
 @admin.register(UserSettings)
 class UserSettingsAdmin(admin.ModelAdmin):
-    list_display = ('user', 'tmdb_api_key', 'trakt_username', 'trakt_client_id', 'updated_at')
+    list_display = ('user', 'tmdb_api_key_masked', 'trakt_username', 'trakt_client_id_masked', 'updated_at')
     search_fields = ('user__username', 'trakt_username')
     readonly_fields = ('created_at', 'updated_at')
 

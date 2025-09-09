@@ -14,7 +14,7 @@ def get_watched_movies(username: str, client_id: str) -> list[dict]:
             'trakt-api-key': client_id,
         }
         print(f"DEBUG: URL: {url}")
-        print(f"DEBUG: Headers: trakt-api-key={client_id[:10]}...")
+        print(f"DEBUG: Headers: trakt-api-key={client_id[:4]}...{client_id[-4:]}")
         response = requests.get(url, headers=headers, timeout=30)
         print(f"DEBUG: Response status: {response.status_code}")
         response.raise_for_status()

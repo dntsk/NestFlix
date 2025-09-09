@@ -11,7 +11,7 @@ def import_trakt_data_task(task_id, user_id, username, client_id, tmdb_key):
     task = None
     try:
         print(f"Starting import task: {task_id}")
-        print(f"Parameters: user_id={user_id}, username='{username}', client_id='{client_id[:10]}...', tmdb_key='{tmdb_key[:10]}...'")
+        print(f"Parameters: user_id={user_id}, username='{username}', client_id='{client_id[:4]}...{client_id[-4:]}', tmdb_key='{tmdb_key[:4]}...{tmdb_key[-4:]}'")
 
         # Получаем задачу
         task = ImportTask.objects.get(task_id=task_id)

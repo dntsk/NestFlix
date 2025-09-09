@@ -35,6 +35,16 @@ class UserSettings(models.Model):
     def __str__(self):
         return f"Settings for {self.user.username}"
 
+    def tmdb_api_key_masked(self):
+        if self.tmdb_api_key:
+            return f"{self.tmdb_api_key[:4]}...{self.tmdb_api_key[-4:]}"
+        return ""
+
+    def trakt_client_id_masked(self):
+        if self.trakt_client_id:
+            return f"{self.trakt_client_id[:4]}...{self.trakt_client_id[-4:]}"
+        return ""
+
 class ImportTask(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Ожидает'),
