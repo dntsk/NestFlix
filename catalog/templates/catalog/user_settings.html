@@ -40,8 +40,150 @@ button {
 </form>
 <div style="clear: both;"></div>
 
+<!-- Plex Webhook Section -->
+<h2>Plex Webhook</h2>
+<p>Автоматически добавляйте просмотренные фильмы из Plex в реальном времени</p>
+
+{% if settings.plex_webhook_token and settings.plex_webhook_enabled %}
+    <div style="background: var(--card-background-color, #f8f9fa); padding: 1rem; border-radius: 8px; margin: 1rem 0; border: 1px solid var(--card-border-color, #e9ecef);">
+        <p><strong>Webhook URL:</strong></p>
+        <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+            <input type="text" id="webhook-url" readonly 
+                   value="{{ request.scheme }}://{{ request.get_host }}{% url 'catalog:plex_webhook' token=settings.plex_webhook_token %}"
+                   style="flex: 1; font-size: 0.875rem;">
+            <button type="button" onclick="copyWebhookUrl()" style="width: auto !important; padding: 0.5rem 1rem !important;">
+                📋 Копировать
+            </button>
+        </div>
+        <small>Добавьте этот URL в <a href="https://app.plex.tv/desktop/#!/account/webhooks" target="_blank">настройки Plex Webhooks</a></small>
+        
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--card-border-color, #e9ecef);">
+            <p><small>Создан: {{ settings.plex_webhook_created_at|date:"d.m.Y H:i" }}</small></p>
+            <button type="button" onclick="regenerateWebhook()" style="width: auto !important; background: var(--secondary) !important; margin-right: 0.5rem;">
+                🔄 Перегенерировать
+            </button>
+            <button type="button" onclick="disableWebhook()" style="width: auto !important; background: #dc3545 !important;">
+                ❌ Отключить
+            </button>
+        </div>
+    </div>
+{% else %}
+    <p>Webhook не настроен. Нажмите кнопку ниже для генерации уникального URL.</p>
+    <button type="button" onclick="generateWebhook()" style="width: auto !important;">
+        ✨ Сгенерировать Webhook
+    </button>
+    <div id="webhook-status" style="display: none; margin-top: 1rem; padding: 1rem; background: var(--card-background-color, #f8f9fa); border-radius: 8px;">
+        <p id="webhook-message"></p>
+    </div>
+{% endif %}
+
+<script>
+function getCsrfToken() {
+    const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfInput) {
+        return csrfInput.value;
+    }
+    
+    const csrfCookie = document.cookie.split('; ')
+        .find(row => row.startsWith('csrftoken='));
+    if (csrfCookie) {
+        return csrfCookie.split('=')[1];
+    }
+    
+    return '{{ csrf_token }}';
+}
+
+function generateWebhook() {
+    const csrfToken = getCsrfToken();
+    console.log('Generating webhook with CSRF token:', csrfToken ? 'present' : 'missing');
+    
+    fetch('{% url "catalog:generate_plex_webhook" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(r => {
+        console.log('Response status:', r.status);
+        if (!r.ok) {
+            throw new Error(`HTTP ${r.status}`);
+        }
+        return r.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка генерации webhook: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Ошибка: ' + error.message);
+    });
+}
+
+function regenerateWebhook() {
+    if (!confirm('Старый URL перестанет работать. Продолжить?')) return;
+    generateWebhook();
+}
+
+function disableWebhook() {
+    if (!confirm('Отключить Plex webhook?')) return;
+    
+    fetch('{% url "catalog:disable_plex_webhook" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCsrfToken(),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(r => {
+        if (!r.ok) {
+            throw new Error(`HTTP ${r.status}`);
+        }
+        return r.json();
+    })
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        alert('Ошибка: ' + error.message);
+    });
+}
+
+function copyWebhookUrl() {
+    const input = document.getElementById('webhook-url');
+    input.select();
+    input.setSelectionRange(0, 99999);
+    
+    try {
+        document.execCommand('copy');
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '✅ Скопировано!';
+        button.style.background = '#28a745';
+        
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.style.background = '';
+        }, 2000);
+    } catch (err) {
+        alert('Не удалось скопировать. Скопируйте вручную.');
+    }
+}
+</script>
+
+<hr style="margin: 2rem 0;">
+
 {% if settings.tmdb_api_key and settings.trakt_username and settings.trakt_client_id %}
-<h2>Импорт данных</h2>
+<h2>Импорт из Trakt</h2>
 <p>Импортируйте просмотренные фильмы и оценки из Trakt.tv</p>
 
 <!-- Индикатор импорта -->

@@ -4,6 +4,7 @@ from django.contrib.auth import logout
 from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
 from django.core.paginator import Paginator
+from django.utils import timezone
 from datetime import datetime
 from .models import Movie, UserRating, UserSettings, ImportTask
 from .tmdb_client import search_movies, get_movie_details
@@ -262,3 +263,112 @@ def import_status(request, task_id):
 def logout_view(request):
     logout(request)
     return redirect('catalog:home')
+
+@login_required
+def generate_plex_webhook(request):
+    """
+    Generate unique Plex webhook token for user
+    """
+    if request.method == 'POST':
+        import uuid
+        
+        settings_obj, _ = UserSettings.objects.get_or_create(user=request.user)
+        
+        settings_obj.plex_webhook_token = uuid.uuid4().hex
+        settings_obj.plex_webhook_enabled = True
+        settings_obj.plex_webhook_created_at = timezone.now()
+        settings_obj.save()
+        
+        logger.info(f"Generated Plex webhook for user {request.user.username}, token: {mask_sensitive(settings_obj.plex_webhook_token)}")
+        
+        webhook_url = request.build_absolute_uri(
+            reverse('catalog:plex_webhook', kwargs={'token': settings_obj.plex_webhook_token})
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'webhook_url': webhook_url,
+            'token': settings_obj.plex_webhook_token
+        })
+    
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+@login_required
+def disable_plex_webhook(request):
+    """
+    Disable Plex webhook for user
+    """
+    if request.method == 'POST':
+        try:
+            settings_obj = UserSettings.objects.get(user=request.user)
+            settings_obj.plex_webhook_enabled = False
+            settings_obj.save()
+            
+            logger.info(f"Disabled Plex webhook for user {request.user.username}")
+            
+            return JsonResponse({'success': True})
+        except UserSettings.DoesNotExist:
+            return JsonResponse({'error': 'Settings not found'}, status=404)
+    
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+import json
+from .plex_utils import process_plex_event, log_webhook_event
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def plex_webhook_receiver(request, token):
+    """
+    Receive and process Plex webhooks
+    """
+    logger.info(f"Received Plex webhook with token: {mask_sensitive(token)}")
+    
+    try:
+        settings = UserSettings.objects.get(
+            plex_webhook_token=token,
+            plex_webhook_enabled=True
+        )
+        user = settings.user
+        logger.info(f"Webhook matched to user: {user.username}")
+    except UserSettings.DoesNotExist:
+        logger.warning(f"Invalid or disabled webhook token: {mask_sensitive(token)}")
+        return JsonResponse({'error': 'Invalid token'}, status=403)
+    
+    try:
+        payload_json = request.POST.get('payload')
+        if not payload_json:
+            logger.error("No payload in webhook request")
+            return JsonResponse({'error': 'No payload'}, status=400)
+        
+        payload = json.loads(payload_json)
+        event = payload.get('event', 'unknown')
+        
+        logger.info(f"Plex event: {event} for user {user.username}")
+        
+        processed = process_plex_event(user, event, payload)
+        
+        log_webhook_event(
+            user=user,
+            event_type=event,
+            payload=payload,
+            processed=processed,
+            error_message='' if processed else 'Event not processed'
+        )
+        
+        return JsonResponse({'status': 'ok', 'processed': processed})
+        
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON payload: {e}")
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        logger.error(f"Error processing Plex webhook: {e}")
+        log_webhook_event(
+            user=user,
+            event_type=payload.get('event', 'unknown') if 'payload' in locals() else 'unknown',
+            payload=payload if 'payload' in locals() else {},
+            processed=False,
+            error_message=str(e)
+        )
+        return JsonResponse({'error': str(e)}, status=500)

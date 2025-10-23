@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Movie, UserRating, UserSettings, ImportTask
+from .models import Movie, UserRating, UserSettings, ImportTask, PlexWebhookEvent
 
 @admin.register(Movie)
 class MovieAdmin(admin.ModelAdmin):
@@ -19,9 +19,10 @@ class UserRatingAdmin(admin.ModelAdmin):
 
 @admin.register(UserSettings)
 class UserSettingsAdmin(admin.ModelAdmin):
-    list_display = ('user', 'tmdb_api_key_masked', 'trakt_username', 'trakt_client_id_masked', 'updated_at')
+    list_display = ('user', 'tmdb_api_key_masked', 'trakt_username', 'trakt_client_id_masked', 'plex_webhook_enabled', 'updated_at')
+    list_filter = ('plex_webhook_enabled',)
     search_fields = ('user__username', 'trakt_username')
-    readonly_fields = ('created_at', 'updated_at')
+    readonly_fields = ('created_at', 'updated_at', 'plex_webhook_created_at', 'plex_webhook_token_masked')
 
 @admin.register(ImportTask)
 class ImportTaskAdmin(admin.ModelAdmin):
@@ -29,3 +30,16 @@ class ImportTaskAdmin(admin.ModelAdmin):
     list_filter = ('status', 'created_at')
     search_fields = ('user__username', 'task_id')
     readonly_fields = ('task_id', 'created_at', 'updated_at', 'completed_at')
+
+@admin.register(PlexWebhookEvent)
+class PlexWebhookEventAdmin(admin.ModelAdmin):
+    list_display = ('user', 'event_type', 'processed', 'created_at')
+    list_filter = ('event_type', 'processed', 'created_at')
+    search_fields = ('user__username', 'event_type')
+    readonly_fields = ('user', 'event_type', 'payload', 'processed', 'error_message', 'created_at')
+    
+    def has_add_permission(self, request):
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        return False

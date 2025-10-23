@@ -29,6 +29,9 @@ class UserSettings(models.Model):
     tmdb_api_key = models.CharField(max_length=100, blank=True, verbose_name="TMDB API Key")
     trakt_username = models.CharField(max_length=50, blank=True, verbose_name="Trakt.tv Username")
     trakt_client_id = models.CharField(max_length=100, blank=True, verbose_name="Trakt.tv Client ID")
+    plex_webhook_token = models.CharField(max_length=64, blank=True, unique=True, null=True, verbose_name="Plex Webhook Token")
+    plex_webhook_enabled = models.BooleanField(default=False, verbose_name="Plex Webhook Enabled")
+    plex_webhook_created_at = models.DateTimeField(null=True, blank=True, verbose_name="Plex Webhook Created")
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -44,6 +47,11 @@ class UserSettings(models.Model):
         if self.trakt_client_id:
             return f"{self.trakt_client_id[:4]}...{self.trakt_client_id[-4:]}"
         return ""
+    
+    def plex_webhook_token_masked(self):
+        if self.plex_webhook_token:
+            return f"{self.plex_webhook_token[:8]}...{self.plex_webhook_token[-8:]}"
+        return ""
 
 class ImportTask(models.Model):
     STATUS_CHOICES = [
@@ -56,7 +64,7 @@ class ImportTask(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     task_id = models.CharField(max_length=100, unique=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    progress = models.IntegerField(default=0)  # Процент выполнения
+    progress = models.IntegerField(default=0)
     total_items = models.IntegerField(default=0)
     imported_count = models.IntegerField(default=0)
     error_message = models.TextField(blank=True)
@@ -66,3 +74,19 @@ class ImportTask(models.Model):
 
     def __str__(self):
         return f"Import for {self.user.username} - {self.status}"
+
+class PlexWebhookEvent(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    event_type = models.CharField(max_length=50, verbose_name="Event Type")
+    payload = models.JSONField(verbose_name="Payload")
+    processed = models.BooleanField(default=False, verbose_name="Processed")
+    error_message = models.TextField(blank=True, verbose_name="Error Message")
+    created_at = models.DateTimeField(default=timezone.now, verbose_name="Created At")
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Plex Webhook Event"
+        verbose_name_plural = "Plex Webhook Events"
+
+    def __str__(self):
+        return f"{self.user.username} - {self.event_type} - {self.created_at}"

@@ -43,6 +43,23 @@
   logger.info(f"API key: {mask_sensitive(api_key)}")
   ```
 
+## Plex Webhook Integration
+- **Endpoint**: `/webhook/plex/<token>/` (CSRF exempt)
+- **Генерация токена**: `/settings/generate-plex-webhook/` (POST)
+- **Отключение**: `/settings/disable-plex-webhook/` (POST)
+- **Модели**:
+  - `UserSettings`: поля `plex_webhook_token`, `plex_webhook_enabled`, `plex_webhook_created_at`
+  - `PlexWebhookEvent`: логирование всех webhook событий для аудита
+- **Обработка**: `catalog/plex_utils.py`
+  - `extract_tmdb_id_from_plex_guid()` - парсинг TMDB ID из Plex GUID
+  - `process_plex_event()` - обработка событий (media.play, media.scrobble)
+  - `log_webhook_event()` - сохранение событий в БД
+- **Безопасность**:
+  - Уникальный UUID токен для каждого пользователя
+  - Логирование всех запросов
+  - Возможность отключения/перегенерации
+  - Маскировка токенов в логах
+
 ## Правила безопасного кода
 - **Защита чувствительных данных**: API ключи и Client ID должны маскироваться в логах (первые 4 и последние 4 символа)
 - **Логирование**: 
