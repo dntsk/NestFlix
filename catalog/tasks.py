@@ -4,38 +4,33 @@ from django.utils import timezone
 from .models import ImportTask, Movie, UserRating
 from .trakt_client import get_watched_movies, get_watched_shows, get_rated_movies, get_rated_shows
 from .tmdb_client import get_movie_details
+from .logger import logger, mask_sensitive
 
 @background(schedule=0)
 def import_trakt_data_task(task_id, user_id, username, client_id, tmdb_key):
     """Фоновая задача импорта данных из Trakt.tv"""
     task = None
     try:
-        print(f"Starting import task: {task_id}")
-        print(f"Parameters: user_id={user_id}, username='{username}', client_id='{client_id[:4]}...{client_id[-4:]}', tmdb_key='{tmdb_key[:4]}...{tmdb_key[-4:]}'")
+        logger.info(f"Starting import task: {task_id}")
+        logger.debug(f"Parameters: user_id={user_id}, username='{username}', client_id={mask_sensitive(client_id)}, tmdb_key={mask_sensitive(tmdb_key)}")
 
-        # Получаем задачу
         task = ImportTask.objects.get(task_id=task_id)
         task.status = 'running'
         task.save()
+        logger.info(f"Task {task_id} status set to 'running'")
 
-        # Получаем данные из Trakt
-        print(f"Fetching data from Trakt for user: {username}")
+        logger.info(f"Fetching data from Trakt for user: {username}")
         watched_movies = get_watched_movies(username, client_id)
         watched_shows = get_watched_shows(username, client_id)
         rated_movies = get_rated_movies(username, client_id)
         rated_shows = get_rated_shows(username, client_id)
 
-        print(f"Trakt data received:")
-        print(f"  Watched movies: {len(watched_movies)}")
-        print(f"  Watched shows: {len(watched_shows)}")
-        print(f"  Rated movies: {len(rated_movies)}")
-        print(f"  Rated shows: {len(rated_shows)}")
+        logger.info(f"Trakt data received: {len(watched_movies)} watched movies, {len(watched_shows)} watched shows, {len(rated_movies)} rated movies, {len(rated_shows)} rated shows")
 
-        # Обновляем общее количество
         total_items = len(watched_movies) + len(watched_shows) + len(rated_movies) + len(rated_shows)
         task.total_items = total_items
         task.save()
-        print(f"Total items to import: {total_items}")
+        logger.info(f"Total items to import: {total_items}")
 
         # Создаем словарь всех элементов
         all_items = {}
@@ -75,19 +70,17 @@ def import_trakt_data_task(task_id, user_id, username, client_id, tmdb_key):
             task.progress = min(50, int((processed_count / total_items) * 50))
             task.save()
 
-        # Импортируем в базу данных
         imported_count = 0
         total_to_import = len(all_items)
 
-        print(f"Starting import of {total_to_import} items...")
+        logger.info(f"Starting import of {total_to_import} items into database")
 
         for i, (key, item) in enumerate(all_items.items()):
             try:
                 movie_data = get_movie_details(item['media_type'], item['tmdb_id'], tmdb_key)
                 if movie_data:
-                    # Use TMDB title if available, otherwise keep Trakt title
                     final_title = movie_data.get('title') or movie_data.get('name') or item['title']
-                    print(f"DEBUG Import: Trakt title: '{item['title']}', TMDB title: '{final_title}'")
+                    logger.debug(f"Import item: Trakt='{item['title']}', TMDB='{final_title}'")
 
                     movie, created = Movie.objects.get_or_create(
                         tmdb_id=item['tmdb_id'],
@@ -98,11 +91,9 @@ def import_trakt_data_task(task_id, user_id, username, client_id, tmdb_key):
                         }
                     )
 
-                    # ОБНОВЛЯЕМ существующую запись с новыми данными
                     if not created:
-                        # Обновляем title если он отличается
                         if movie.title != final_title:
-                            print(f"Updating title for {movie.title} -> {final_title}")
+                            logger.info(f"Updating title: {movie.title} -> {final_title}")
                             movie.title = final_title
                         movie.data = movie_data
                         movie.save()
@@ -125,61 +116,46 @@ def import_trakt_data_task(task_id, user_id, username, client_id, tmdb_key):
                         }
                     )
 
-                    # ВАЖНО: Не переписываем существующую оценку!
-                    # Только добавляем новую оценку, если её нет
                     if not created_rating:
-                        # Если оценки нет в нашей базе, но есть в Trakt - добавляем
                         if user_rating.rating is None and item['rating'] is not None:
                             user_rating.rating = item['rating']
                             user_rating.save()
-                        # Всегда обновляем дату просмотра, если её нет
+                            logger.debug(f"Updated rating for {item['title']}")
                         if user_rating.watched_at is None and watched_at:
                             user_rating.watched_at = watched_at
                             user_rating.save()
+                            logger.debug(f"Updated watched_at for {item['title']}")
+                    else:
+                        logger.debug(f"Created new UserRating for {item['title']}")
 
-                    # Считаем каждый обработанный элемент как импортированный
-                    # Импорт - это процесс обработки всех элементов из Trakt
                     imported_count += 1
-
-                    # Обновляем счетчик сразу после увеличения
                     task.imported_count = imported_count
                     task.save()
-                    print(f"Imported {imported_count}/{total_to_import} items")
 
-                    if created_rating:
-                        print(f"Created new UserRating for {item['title']}")
-                    elif user_rating.rating is None and item['rating'] is not None:
-                        print(f"Updated rating for existing {item['title']}")
-                    elif user_rating.watched_at is None and watched_at:
-                        print(f"Updated watched_at for existing {item['title']}")
-                    else:
-                        print(f"Processed existing {item['title']} (no updates needed)")
-
-                # Обновляем прогресс каждые 5 элементов или в конце
                 if (i + 1) % 5 == 0 or (i + 1) == total_to_import:
                     progress = 50 + int(((i + 1) / total_to_import) * 50)
-                    task.progress = min(100, progress)  # Не превышаем 100%
-                    print(f"Import progress: {task.progress}% ({i + 1}/{total_to_import} processed, {imported_count} imported)")
+                    task.progress = min(100, progress)
+                    logger.info(f"Import progress: {task.progress}% ({i + 1}/{total_to_import} processed, {imported_count} imported)")
 
             except Exception as e:
-                print(f"Error importing {item['title']}: {e}")
+                logger.error(f"Error importing {item['title']}: {e}")
                 continue
 
-        # Завершаем задачу
         task.status = 'completed'
         task.imported_count = imported_count
         task.completed_at = timezone.now()
         task.save()
+        logger.info(f"Import task {task_id} completed successfully. Imported {imported_count} items.")
 
     except ImportTask.DoesNotExist:
-        print(f"Task {task_id} not found in database")
-        # Задача была удалена, ничего не делаем
+        logger.warning(f"Task {task_id} not found in database")
         return
     except Exception as e:
-        print(f"Error in import task {task_id}: {e}")
+        logger.error(f"Error in import task {task_id}: {e}")
         if task:
             task.status = 'failed'
             task.error_message = str(e)
             task.save()
+            logger.error(f"Task {task_id} marked as failed")
         else:
-            print("Task object not available for error handling")
+            logger.error("Task object not available for error handling")

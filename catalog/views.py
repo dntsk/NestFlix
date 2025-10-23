@@ -9,6 +9,7 @@ from .models import Movie, UserRating, UserSettings, ImportTask
 from .tmdb_client import search_movies, get_movie_details
 from .trakt_client import get_watched_movies, get_watched_shows, get_rated_movies, get_rated_shows
 from .tasks import import_trakt_data_task
+from .logger import logger, mask_sensitive
 import time
 import re
 from django.contrib import messages
@@ -213,8 +214,8 @@ def import_from_trakt(request):
         status='pending'
     )
 
-    print(f"Starting import task {task_id} for user {request.user.username}")
-    print(f"Trakt settings: username='{username}', client_id='{trakt_client_id[:4]}...{trakt_client_id[-4:]}'")
+    logger.info(f"Starting import task {task_id} for user {request.user.username}")
+    logger.debug(f"Trakt settings: username='{username}', client_id={mask_sensitive(trakt_client_id)}")
 
     # Запускаем фоновую задачу
     import_trakt_data_task(

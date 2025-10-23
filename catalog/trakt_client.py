@@ -1,25 +1,28 @@
 import requests
 from django.conf import settings
+from .logger import logger, mask_sensitive
 
 TRAKT_BASE_URL = 'https://api.trakt.tv'
 
 def get_watched_movies(username: str, client_id: str) -> list[dict]:
     """Get watched movies from Trakt.tv."""
     try:
-        print(f"DEBUG: Requesting watched movies for {username}")
         url = f"{TRAKT_BASE_URL}/users/{username}/watched/movies"
         headers = {
             'Content-Type': 'application/json',
             'trakt-api-version': '2',
             'trakt-api-key': client_id,
         }
-        print(f"DEBUG: URL: {url}")
-        print(f"DEBUG: Headers: trakt-api-key={client_id[:4]}...{client_id[-4:]}")
+        logger.info(f"Requesting watched movies for user: {username}")
+        logger.debug(f"Trakt API URL: {url}, client_id: {mask_sensitive(client_id)}")
+        
         response = requests.get(url, headers=headers, timeout=30)
-        print(f"DEBUG: Response status: {response.status_code}")
+        logger.debug(f"Trakt API response status: {response.status_code}")
         response.raise_for_status()
+        
         data = response.json()
-        print(f"DEBUG: Received {len(data)} watched movies")
+        logger.info(f"Received {len(data)} watched movies for {username}")
+        
         results = []
         for item in data:
             movie = item['movie']
@@ -33,24 +36,27 @@ def get_watched_movies(username: str, client_id: str) -> list[dict]:
             })
         return results
     except requests.RequestException as e:
-        print(f"Error getting Trakt watched movies: {e}")
+        logger.error(f"Error getting Trakt watched movies for {username}: {e}")
         return []
 
 def get_watched_shows(username: str, client_id: str) -> list[dict]:
     """Get watched TV shows from Trakt.tv."""
     try:
-        print(f"DEBUG: Requesting watched shows for {username}")
         url = f"{TRAKT_BASE_URL}/users/{username}/watched/shows"
         headers = {
             'Content-Type': 'application/json',
             'trakt-api-version': '2',
             'trakt-api-key': client_id,
         }
+        logger.info(f"Requesting watched shows for user: {username}")
+        
         response = requests.get(url, headers=headers, timeout=30)
-        print(f"DEBUG: Response status for shows: {response.status_code}")
+        logger.debug(f"Trakt shows response status: {response.status_code}")
         response.raise_for_status()
+        
         data = response.json()
-        print(f"DEBUG: Received {len(data)} watched shows")
+        logger.info(f"Received {len(data)} watched shows for {username}")
+        
         results = []
         for item in data:
             show = item['show']
@@ -64,24 +70,27 @@ def get_watched_shows(username: str, client_id: str) -> list[dict]:
             })
         return results
     except requests.RequestException as e:
-        print(f"Error getting Trakt watched shows: {e}")
+        logger.error(f"Error getting Trakt watched shows for {username}: {e}")
         return []
 
 def get_rated_movies(username: str, client_id: str) -> list[dict]:
     """Get rated movies from Trakt.tv."""
     try:
-        print(f"DEBUG: Requesting rated movies for {username}")
         url = f"{TRAKT_BASE_URL}/users/{username}/ratings/movies"
         headers = {
             'Content-Type': 'application/json',
             'trakt-api-version': '2',
             'trakt-api-key': client_id,
         }
+        logger.info(f"Requesting rated movies for user: {username}")
+        
         response = requests.get(url, headers=headers, timeout=30)
-        print(f"DEBUG: Response status for rated movies: {response.status_code}")
+        logger.debug(f"Trakt rated movies response status: {response.status_code}")
         response.raise_for_status()
+        
         data = response.json()
-        print(f"DEBUG: Received {len(data)} rated movies")
+        logger.info(f"Received {len(data)} rated movies for {username}")
+        
         results = []
         for item in data:
             movie = item['movie']
@@ -93,28 +102,31 @@ def get_rated_movies(username: str, client_id: str) -> list[dict]:
                 'rated_at': item.get('rated_at'),
                 'media_type': 'movie',
             }
-            print(f"DEBUG Trakt: Rated movie - {result['title']}, rating: {result['rating']}, tmdb_id: {result['tmdb_id']}")
+            logger.debug(f"Rated movie: {result['title']} (rating: {result['rating']}, tmdb_id: {result['tmdb_id']})")
             results.append(result)
         return results
     except requests.RequestException as e:
-        print(f"Error getting Trakt rated movies: {e}")
+        logger.error(f"Error getting Trakt rated movies for {username}: {e}")
         return []
 
 def get_rated_shows(username: str, client_id: str) -> list[dict]:
     """Get rated TV shows from Trakt.tv."""
     try:
-        print(f"DEBUG: Requesting rated shows for {username}")
         url = f"{TRAKT_BASE_URL}/users/{username}/ratings/shows"
         headers = {
             'Content-Type': 'application/json',
             'trakt-api-version': '2',
             'trakt-api-key': client_id,
         }
+        logger.info(f"Requesting rated shows for user: {username}")
+        
         response = requests.get(url, headers=headers, timeout=30)
-        print(f"DEBUG: Response status for rated shows: {response.status_code}")
+        logger.debug(f"Trakt rated shows response status: {response.status_code}")
         response.raise_for_status()
+        
         data = response.json()
-        print(f"DEBUG: Received {len(data)} rated shows")
+        logger.info(f"Received {len(data)} rated shows for {username}")
+        
         results = []
         for item in data:
             show = item['show']
@@ -126,9 +138,9 @@ def get_rated_shows(username: str, client_id: str) -> list[dict]:
                 'rated_at': item.get('rated_at'),
                 'media_type': 'tv',
             }
-            print(f"DEBUG Trakt: Rated show - {result['title']}, rating: {result['rating']}, tmdb_id: {result['tmdb_id']}")
+            logger.debug(f"Rated show: {result['title']} (rating: {result['rating']}, tmdb_id: {result['tmdb_id']})")
             results.append(result)
         return results
     except requests.RequestException as e:
-        print(f"Error getting Trakt rated shows: {e}")
+        logger.error(f"Error getting Trakt rated shows for {username}: {e}")
         return []
