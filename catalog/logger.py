@@ -16,7 +16,7 @@ logger.add(
 )
 
 logger.add(
-    LOGS_DIR / "movie_tracker.log",
+    LOGS_DIR / "nestflix.log",
     rotation="10 MB",
     retention="30 days",
     compression="zip",

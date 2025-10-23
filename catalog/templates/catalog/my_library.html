@@ -1,11 +1,11 @@
 {% extends 'catalog/base.html' %}
 
-{% block title %}{% if is_authenticated %}Моя коллекция{% else %}Популярные фильмы{% endif %}{% endblock %}
+{% block title %}{% if is_authenticated %}My Collection{% else %}Popular Movies{% endif %}{% endblock %}
 
 {% block content %}
-<h1>{% if is_authenticated %}Моя коллекция{% else %}Популярные фильмы{% endif %}</h1>
+<h1>{% if is_authenticated %}My Collection{% else %}Popular Movies{% endif %}</h1>
 {% if not is_authenticated %}
-<p>Топ фильмов по среднему рейтингу пользователей</p>
+<p>Top movies by average user rating</p>
 {% endif %}
 {% if page_obj %}
 <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
@@ -18,7 +18,7 @@
         {% else %}
             <a href="{% url 'catalog:movie_detail' user_rating.movie.tmdb_id %}" style="text-decoration: none;">
                 <div style="width: 200px; height: 300px; background: var(--border); display: flex; align-items: center; justify-content: center; border-radius: 8px; margin: 0 auto 0.5rem; transition: transform 0.2s;">
-                    Нет постера
+                    No Poster
                 </div>
             </a>
         {% endif %}
@@ -26,7 +26,7 @@
         {% if is_authenticated %}
             <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end;">
                 {% if user_rating.watched_at %}
-                    <p style="margin: 0.5rem 0; color: var(--muted);"><small>Просмотрен: {{ user_rating.watched_at|date:"d.m.Y" }}</small></p>
+                    <p style="margin: 0.5rem 0; color: var(--muted);"><small>Watched: {{ user_rating.watched_at|date:"Y-m-d" }}</small></p>
                 {% endif %}
                 {% if user_rating.rating %}
                     <p style="margin: 0; font-weight: bold; color: var(--accent);">{{ user_rating.rating }}/10</p>
@@ -48,21 +48,21 @@
     <ul style="list-style: none; display: flex; gap: 0.5rem; padding: 0; margin-left: auto;">
         <li style="flex: 1;"></li>
         {% if page_obj.has_previous %}
-            <li><a href="?page=1" style="padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--primary);">&laquo; Первая</a></li>
-            <li><a href="?page={{ page_obj.previous_page_number }}" style="padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--primary);">Предыдущая</a></li>
+            <li><a href="?page=1" style="padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--primary);">&laquo; First</a></li>
+            <li><a href="?page={{ page_obj.previous_page_number }}" style="padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--primary);">Previous</a></li>
         {% endif %}
-        <li style="padding: 0.5rem 1rem; color: var(--muted);">{{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</li>
+        <li style="padding: 0.5rem 1rem; color: var(--muted);">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</li>
         {% if page_obj.has_next %}
-            <li><a href="?page={{ page_obj.next_page_number }}" style="padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--primary);">Следующая</a></li>
-            <li><a href="?page={{ page_obj.paginator.num_pages }}" style="padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--primary);">Последняя &raquo;</a></li>
+            <li><a href="?page={{ page_obj.next_page_number }}" style="padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--primary);">Next</a></li>
+            <li><a href="?page={{ page_obj.paginator.num_pages }}" style="padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--primary);">Last &raquo;</a></li>
         {% endif %}
     </ul>
 </nav>
 {% endif %}
 {% else %}
 <div style="text-align: center; padding: 2rem;">
-    <p>Ваша коллекция пуста.</p>
-    <a href="{% url 'catalog:movie_search' %}" role="button">Добавить фильм</a>
+    <p>Your collection is empty.</p>
+    <a href="{% url 'catalog:movie_search' %}" role="button">Add Movie</a>
 </div>
 {% endif %}
 {% endblock %}

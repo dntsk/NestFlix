@@ -1,6 +1,6 @@
 {% extends 'catalog/base.html' %}
 
-{% block title %}Настройки{% endblock %}
+{% block title %}Settings{% endblock %}
 
 {% block content %}
 <style>
@@ -19,30 +19,30 @@ button {
     width: 250px !important;
 }
 </style>
-<h1>Настройки API</h1>
-<p>Настройте ключи API для подключения к внешним сервисам.</p>
+<h1>API Settings</h1>
+<p>Configure API keys to connect to external services.</p>
 
 <form method="post">
     {% csrf_token %}
 
     <label for="tmdb_api_key">TMDB API Key:</label>
-    <input type="text" id="tmdb_api_key" name="tmdb_api_key" value="{{ settings.tmdb_api_key }}" placeholder="Введите ваш TMDB API Key" required>
-    <small>Получите ключ на <a href="https://www.themoviedb.org/settings/api" target="_blank">themoviedb.org</a></small>
+    <input type="text" id="tmdb_api_key" name="tmdb_api_key" value="{{ settings.tmdb_api_key }}" placeholder="Enter your TMDB API Key" required>
+    <small>Get your key at <a href="https://www.themoviedb.org/settings/api" target="_blank">themoviedb.org</a></small>
 
     <label for="trakt_username">Trakt.tv Username:</label>
-    <input type="text" id="trakt_username" name="trakt_username" value="{{ settings.trakt_username }}" placeholder="Ваш username на Trakt.tv">
+    <input type="text" id="trakt_username" name="trakt_username" value="{{ settings.trakt_username }}" placeholder="Your username on Trakt.tv">
 
     <label for="trakt_client_id">Trakt.tv Client ID:</label>
-    <input type="text" id="trakt_client_id" name="trakt_client_id" value="{{ settings.trakt_client_id }}" placeholder="Client ID вашего приложения">
-    <small>Создайте приложение на <a href="https://trakt.tv/oauth/applications" target="_blank">trakt.tv</a></small>
+    <input type="text" id="trakt_client_id" name="trakt_client_id" value="{{ settings.trakt_client_id }}" placeholder="Your application's Client ID">
+    <small>Create an application at <a href="https://trakt.tv/oauth/applications" target="_blank">trakt.tv</a></small>
 
-    <button type="submit" style="float: right;">Сохранить настройки</button>
+    <button type="submit" style="float: right;">Save Settings</button>
 </form>
 <div style="clear: both;"></div>
 
 <!-- Plex Webhook Section -->
 <h2>Plex Webhook</h2>
-<p>Автоматически добавляйте просмотренные фильмы из Plex в реальном времени</p>
+<p>Automatically add watched movies from Plex in real-time</p>
 
 {% if settings.plex_webhook_token and settings.plex_webhook_enabled %}
     <div style="background: var(--card-background-color, #f8f9fa); padding: 1rem; border-radius: 8px; margin: 1rem 0; border: 1px solid var(--card-border-color, #e9ecef);">
@@ -52,25 +52,25 @@ button {
                    value="{{ request.scheme }}://{{ request.get_host }}{% url 'catalog:plex_webhook' token=settings.plex_webhook_token %}"
                    style="flex: 1; font-size: 0.875rem;">
             <button type="button" onclick="copyWebhookUrl()" style="width: auto !important; padding: 0.5rem 1rem !important;">
-                📋 Копировать
+                📋 Copy
             </button>
         </div>
-        <small>Добавьте этот URL в <a href="https://app.plex.tv/desktop/#!/account/webhooks" target="_blank">настройки Plex Webhooks</a></small>
+        <small>Add this URL to <a href="https://app.plex.tv/desktop/#!/account/webhooks" target="_blank">Plex Webhooks settings</a></small>
         
         <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--card-border-color, #e9ecef);">
-            <p><small>Создан: {{ settings.plex_webhook_created_at|date:"d.m.Y H:i" }}</small></p>
+            <p><small>Created: {{ settings.plex_webhook_created_at|date:"Y-m-d H:i" }}</small></p>
             <button type="button" onclick="regenerateWebhook()" style="width: auto !important; background: var(--secondary) !important; margin-right: 0.5rem;">
-                🔄 Перегенерировать
+                🔄 Regenerate
             </button>
             <button type="button" onclick="disableWebhook()" style="width: auto !important; background: #dc3545 !important;">
-                ❌ Отключить
+                ❌ Disable
             </button>
         </div>
     </div>
 {% else %}
-    <p>Webhook не настроен. Нажмите кнопку ниже для генерации уникального URL.</p>
+    <p>Webhook not configured. Click the button below to generate a unique URL.</p>
     <button type="button" onclick="generateWebhook()" style="width: auto !important;">
-        ✨ Сгенерировать Webhook
+        ✨ Generate Webhook
     </button>
     <div id="webhook-status" style="display: none; margin-top: 1rem; padding: 1rem; background: var(--card-background-color, #f8f9fa); border-radius: 8px;">
         <p id="webhook-message"></p>
@@ -116,22 +116,22 @@ function generateWebhook() {
         if (data.success) {
             location.reload();
         } else {
-            alert('Ошибка генерации webhook: ' + (data.error || 'Unknown error'));
+            alert('Webhook generation error: ' + (data.error || 'Unknown error'));
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Ошибка: ' + error.message);
+        alert('Error: ' + error.message);
     });
 }
 
 function regenerateWebhook() {
-    if (!confirm('Старый URL перестанет работать. Продолжить?')) return;
+    if (!confirm('The old URL will stop working. Continue?')) return;
     generateWebhook();
 }
 
 function disableWebhook() {
-    if (!confirm('Отключить Plex webhook?')) return;
+    if (!confirm('Disable Plex webhook?')) return;
     
     fetch('{% url "catalog:disable_plex_webhook" %}', {
         method: 'POST',
@@ -150,11 +150,11 @@ function disableWebhook() {
         if (data.success) {
             location.reload();
         } else {
-            alert('Ошибка: ' + (data.error || 'Unknown error'));
+            alert('Error: ' + (data.error || 'Unknown error'));
         }
     })
     .catch(error => {
-        alert('Ошибка: ' + error.message);
+        alert('Error: ' + error.message);
     });
 }
 
@@ -167,7 +167,7 @@ function copyWebhookUrl() {
         document.execCommand('copy');
         const button = event.target;
         const originalText = button.innerHTML;
-        button.innerHTML = '✅ Скопировано!';
+        button.innerHTML = '✅ Copied!';
         button.style.background = '#28a745';
         
         setTimeout(() => {
@@ -175,7 +175,7 @@ function copyWebhookUrl() {
             button.style.background = '';
         }, 2000);
     } catch (err) {
-        alert('Не удалось скопировать. Скопируйте вручную.');
+        alert('Failed to copy. Please copy manually.');
     }
 }
 </script>
@@ -183,14 +183,14 @@ function copyWebhookUrl() {
 <hr style="margin: 2rem 0;">
 
 {% if settings.tmdb_api_key and settings.trakt_username and settings.trakt_client_id %}
-<h2>Импорт из Trakt</h2>
-<p>Импортируйте просмотренные фильмы и оценки из Trakt.tv</p>
+<h2>Import from Trakt</h2>
+<p>Import watched movies and ratings from Trakt.tv</p>
 
-<!-- Индикатор импорта -->
+<!-- Import indicator -->
 <div id="import-status" style="display: none; margin: 1rem 0; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; background-color: var(--secondary);">
     <div style="display: flex; align-items: center; gap: 0.5rem;">
         <div class="spinner" style="width: 16px; height: 16px; border: 2px solid var(--muted); border-top: 2px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-        <span id="status-text" style="color: var(--text); font-weight: 500;">Импорт выполняется...</span>
+        <span id="status-text" style="color: var(--text); font-weight: 500;">Import in progress...</span>
     </div>
 </div>
 
@@ -203,7 +203,7 @@ function copyWebhookUrl() {
 
 <form method="post" action="{% url 'catalog:import_trakt' %}">
     {% csrf_token %}
-    <button type="submit" id="import-btn" style="float: right;">Импортировать из Trakt.tv</button>
+    <button type="submit" id="import-btn" style="float: right;">Import from Trakt.tv</button>
 </form>
 <div style="clear: both;"></div>
 
@@ -216,7 +216,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentTaskId = null;
     let statusCheck = null;
 
-    // Функция проверки статуса
     function checkStatus() {
         if (!currentTaskId) return;
 
@@ -241,20 +240,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 switch(data.status) {
                     case 'pending':
-                        statusText.textContent = 'Импорт в процессе выполнения...';
+                        statusText.textContent = 'Import is being processed...';
                         break;
                     case 'running':
                         console.log('Running status - imported:', data.imported_count, 'total:', data.total_items);
                         if (data.imported_count !== undefined && data.total_items !== undefined) {
-                            statusText.textContent = `Импорт выполняется: ${data.imported_count}/${data.total_items} фильмов`;
+                            statusText.textContent = `Import in progress: ${data.imported_count}/${data.total_items} movies`;
                         } else {
-                            statusText.textContent = 'Импорт выполняется...';
+                            statusText.textContent = 'Import in progress...';
                         }
                         break;
                     case 'completed':
-                        statusText.textContent = 'Импорт завершен!';
+                        statusText.textContent = 'Import completed!';
                         importBtn.disabled = false;
-                        importBtn.textContent = 'Импортировать из Trakt.tv';
+                        importBtn.textContent = 'Import from Trakt.tv';
                         clearInterval(statusCheck);
                         localStorage.removeItem('active_import_task');
                         setTimeout(() => {
@@ -262,9 +261,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         }, 3000);
                         break;
                     case 'failed':
-                        statusText.textContent = 'Ошибка импорта';
+                        statusText.textContent = 'Import failed';
                         importBtn.disabled = false;
-                        importBtn.textContent = 'Импортировать из Trakt.tv';
+                        importBtn.textContent = 'Import from Trakt.tv';
                         clearInterval(statusCheck);
                         localStorage.removeItem('active_import_task');
                         setTimeout(() => {
@@ -285,13 +284,11 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('active_import_task');
     }
 
-    // Обработчик формы
     document.querySelector('form[action*="import-trakt"]').addEventListener('submit', function(e) {
         e.preventDefault();
         importBtn.disabled = true;
-        importBtn.textContent = 'Запуск...';
+        importBtn.textContent = 'Starting...';
 
-        // Отправляем AJAX запрос
         fetch('/import-trakt/', {
             method: 'POST',
             body: new FormData(this),
@@ -305,34 +302,28 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.error) {
                 alert(data.error);
                 importBtn.disabled = false;
-                importBtn.textContent = 'Импортировать из Trakt.tv';
+                importBtn.textContent = 'Import from Trakt.tv';
                 return;
             }
 
-            // Получаем реальный task_id от сервера
             currentTaskId = data.task_id;
-
-            // Сохраняем в localStorage для отслеживания на других страницах
             localStorage.setItem('active_import_task', currentTaskId);
 
-            // Отправляем событие для других страниц
             window.dispatchEvent(new CustomEvent('importStarted', {
                 detail: { taskId: currentTaskId }
             }));
 
-            // Показываем статус и начинаем проверку
             statusDiv.style.display = 'block';
-            statusCheck = setInterval(checkStatus, 3000); // Проверяем каждые 3 секунды
+            statusCheck = setInterval(checkStatus, 3000);
         })
         .catch(error => {
             console.error('Error starting import:', error);
-            alert('Ошибка запуска импорта');
+            alert('Error starting import');
             importBtn.disabled = false;
-            importBtn.textContent = 'Импортировать из Trakt.tv';
+            importBtn.textContent = 'Import from Trakt.tv';
         });
     });
 
-    // Проверяем, есть ли активный импорт при загрузке страницы
     const savedTaskId = localStorage.getItem('active_import_task');
     if (savedTaskId) {
         currentTaskId = savedTaskId;

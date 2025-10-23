@@ -1,10 +1,10 @@
 {% extends 'catalog/base.html' %}
 
-{% block title %}Недавно просмотренные фильмы{% endblock %}
+{% block title %}Recently Watched Movies{% endblock %}
 
 {% block content %}
-<h1>Недавно просмотренные фильмы</h1>
-<p>Фильмы, которые недавно смотрели пользователи системы</p>
+<h1>Recently Watched Movies</h1>
+<p>Movies recently watched by system users</p>
 
 {% if movies %}
 <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; justify-content: center;">
@@ -17,7 +17,7 @@
         {% else %}
             <a href="{% url 'catalog:movie_detail' movie.tmdb_id %}" style="text-decoration: none;">
                 <div style="width: 200px; height: 300px; background: var(--border); display: flex; align-items: center; justify-content: center; border-radius: 8px; margin: 0 auto 0.5rem; transition: transform 0.2s;">
-                    Нет постера
+                    No Poster
                 </div>
             </a>
         {% endif %}
@@ -25,7 +25,7 @@
 
         <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end;">
             {% if movie.last_watched %}
-                <p style="margin: 0.5rem 0; color: var(--muted); font-size: 0.9rem;"><small>Просмотрен: {{ movie.last_watched|date:"d.m.Y" }}</small></p>
+                <p style="margin: 0.5rem 0; color: var(--muted); font-size: 0.9rem;"><small>Watched: {{ movie.last_watched|date:"Y-m-d" }}</small></p>
             {% endif %}
             {% if movie.avg_rating %}
                 <p style="margin: 0; color: var(--accent); font-weight: bold;">{{ movie.avg_rating|floatformat:1 }}/10</p>
@@ -36,13 +36,13 @@
 </div>
 
 <div style="text-align: center; margin-top: 2rem; padding: 2rem; background: var(--secondary); border-radius: 8px;">
-    <h3>Хотите создать свою коллекцию?</h3>
-    <p>Зарегистрируйтесь, чтобы добавлять фильмы, ставить оценки и вести личную статистику.</p>
-    <a href="{% url 'login' %}" role="button" style="margin-top: 1rem;">Войти</a>
+    <h3>Want to create your own collection?</h3>
+    <p>Sign up to add movies, rate them, and track your personal statistics.</p>
+    <a href="{% url 'login' %}" role="button" style="margin-top: 1rem;">Login</a>
 </div>
 {% else %}
 <div style="text-align: center; padding: 2rem;">
-    <p>Пока нет оцененных фильмов в системе.</p>
+    <p>No rated movies in the system yet.</p>
 </div>
 {% endif %}
 {% endblock %}

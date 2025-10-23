@@ -5,19 +5,19 @@
         <img src="https://image.tmdb.org/t/p/w200{{ result.poster_path }}" alt="{{ result.title }}" style="width: 100%; max-width: 200px; border-radius: 8px; margin-bottom: 0.5rem; transition: transform 0.2s;">
     {% else %}
         <div style="width: 200px; height: 300px; background: var(--border); display: flex; align-items: center; justify-content: center; border-radius: 8px; margin: 0 auto 0.5rem; transition: transform 0.2s;">
-            Нет постера
+            No Poster
         </div>
     {% endif %}
     <h5 style="margin: 0.5rem 0;">{{ result.title|escape }} {% if result.release_date %}({{ result.release_date|slice:":4" }}){% endif %} <small>({{ result.media_type|title|escape }})</small></h5>
     <p style="flex: 1;">{{ result.overview|truncatewords:20|escape }}</p>
     {% if not result.is_in_collection %}
-    <button hx-post="{% url 'catalog:add_movie' result.media_type result.id %}" hx-target="closest article" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' style="margin-top: auto; padding: 0.25rem 0.5rem; font-size: 0.875rem;">Добавить в коллекцию</button>
+    <button hx-post="{% url 'catalog:add_movie' result.media_type result.id %}" hx-target="closest article" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' style="margin-top: auto; padding: 0.25rem 0.5rem; font-size: 0.875rem;">Add to Collection</button>
     {% else %}
-    <a href="{% url 'catalog:movie_detail' result.id %}" style="margin-top: auto; padding: 0.25rem 0.5rem; font-size: 0.875rem; display: inline-block; text-decoration: none; color: var(--primary); border: 1px solid var(--primary); border-radius: 4px;">Уже в коллекции</a>
+    <a href="{% url 'catalog:movie_detail' result.id %}" style="margin-top: auto; padding: 0.25rem 0.5rem; font-size: 0.875rem; display: inline-block; text-decoration: none; color: var(--primary); border: 1px solid var(--primary); border-radius: 4px;">Already in Collection</a>
     {% endif %}
 </article>
 {% empty %}
-<p>Ничего не найдено.</p>
+<p>Nothing found.</p>
 {% endfor %}
 </div>
 <script>

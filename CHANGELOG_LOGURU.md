@@ -1,119 +1,119 @@
-# Changelog: Интеграция Loguru
+# Changelog: Loguru Integration
 
-## Дата: 23 октября 2025
+## Date: October 23, 2025
 
-### ✅ Выполненные изменения
+### ✅ Completed Changes
 
-#### 1. Установка и настройка Loguru
-- Добавлена зависимость `loguru>=0.7.0` в `requirements.txt`
-- Создан модуль `catalog/logger.py` с настройками логирования
-- Настроена ротация логов (10 МБ) и архивация (ZIP)
-- Два файла логов: `movie_tracker.log` (DEBUG) и `errors.log` (ERROR)
+#### 1. Loguru Installation and Configuration
+- Added dependency `loguru>=0.7.0` to `requirements.txt`
+- Created module `catalog/logger.py` with logging configuration
+- Configured log rotation (10 MB) and archiving (ZIP)
+- Two log files: `nestflix.log` (DEBUG) and `errors.log` (ERROR)
 
-#### 2. Замена print() на logger
-Обновлены следующие файлы:
+#### 2. Replacing print() with logger
+Updated the following files:
 
 - **catalog/tmdb_client.py**
-  - Все `print()` заменены на `logger.info()`, `logger.debug()`, `logger.error()`
-  - Добавлено логирование поисковых запросов и результатов
-  - Маскировка API ключей в логах
+  - All `print()` replaced with `logger.info()`, `logger.debug()`, `logger.error()`
+  - Added logging for search queries and results
+  - API key masking in logs
 
 - **catalog/trakt_client.py**
-  - Структурированное логирование запросов к Trakt API
-  - Логирование статусов ответов и количества полученных данных
-  - Маскировка Client ID в логах
+  - Structured logging for Trakt API requests
+  - Logging response statuses and data count
+  - Client ID masking in logs
 
 - **catalog/tasks.py**
-  - Детальное логирование процесса импорта
-  - Отслеживание прогресса с помощью logger
-  - Логирование ошибок и успешного завершения задач
+  - Detailed logging of import process
+  - Progress tracking with logger
+  - Error and success logging
 
 - **catalog/views.py**
-  - Логирование запуска задач импорта
-  - Маскировка чувствительных данных при логировании
+  - Logging import task starts
+  - Sensitive data masking when logging
 
-#### 3. Функция маскировки данных
-Создана функция `mask_sensitive()` для безопасного логирования:
-- Показывает первые и последние 4 символа
-- Короткие значения (< 8 символов) полностью скрываются как `***`
+#### 3. Data Masking Function
+Created `mask_sensitive()` function for secure logging:
+- Shows first and last 4 characters
+- Short values (< 8 characters) fully hidden as `***`
 
-#### 4. Обновление документации
-- **README.md**: добавлен раздел "Логирование"
-- **AGENTS.md**: обновлены правила логирования и безопасности
-- **LOGGING.md**: создано подробное руководство по использованию
-- **CHANGELOG_LOGURU.md**: этот файл
+#### 4. Documentation Updates
+- **README.md**: added "Logging" section
+- **AGENTS.md**: updated logging and security rules
+- **LOGGING.md**: created detailed usage guide
+- **CHANGELOG_LOGURU.md**: this file
 
 #### 5. .gitignore
-- Добавлена директория `logs/` в исключения
+- Added `logs/` directory to exclusions
 
-### 📊 Конфигурация логирования
+### 📊 Logging Configuration
 
-**Консольный вывод:**
-- Уровень: INFO и выше
-- Цветное форматирование
-- Формат: `[время] | [уровень] | [модуль]:[функция]:[строка] - [сообщение]`
+**Console Output:**
+- Level: INFO and above
+- Color formatting
+- Format: `[time] | [level] | [module]:[function]:[line] - [message]`
 
-**Файл movie_tracker.log:**
-- Уровень: DEBUG и выше
-- Ротация: 10 МБ
-- Хранение: 30 дней
-- Сжатие: ZIP
+**File nestflix.log:**
+- Level: DEBUG and above
+- Rotation: 10 MB
+- Retention: 30 days
+- Compression: ZIP
 
-**Файл errors.log:**
-- Уровень: ERROR и выше
-- Ротация: 10 МБ
-- Хранение: 60 дней
-- Сжатие: ZIP
+**File errors.log:**
+- Level: ERROR and above
+- Rotation: 10 MB
+- Retention: 60 days
+- Compression: ZIP
 
-### 🔒 Безопасность
+### 🔒 Security
 
-- API ключи автоматически маскируются
-- Client ID скрывается в логах
-- Функция `mask_sensitive()` для всех чувствительных данных
-- Соответствие правилам OWASP
+- API keys automatically masked
+- Client ID hidden in logs
+- `mask_sensitive()` function for all sensitive data
+- OWASP compliance
 
-### 📝 Примеры использования
+### 📝 Usage Examples
 
 ```python
 from .logger import logger, mask_sensitive
 
-# Информационное сообщение
-logger.info("Пользователь успешно авторизован")
+# Information message
+logger.info("User successfully authenticated")
 
-# Отладочная информация
-logger.debug(f"Получено {count} записей")
+# Debug information
+logger.debug(f"Received {count} records")
 
-# Ошибка
-logger.error(f"Ошибка подключения: {error}")
+# Error
+logger.error(f"Connection error: {error}")
 
-# Маскировка
+# Masking
 logger.info(f"API key: {mask_sensitive(api_key)}")
 ```
 
-### 🧪 Тестирование
+### 🧪 Testing
 
-Проверено:
-- ✅ Импорт модуля logger
-- ✅ Создание файлов логов
-- ✅ Ротация и сжатие
-- ✅ Маскировка чувствительных данных
-- ✅ Цветной вывод в консоль
-- ✅ Различные уровни логирования
-- ✅ Django check: без ошибок
+Verified:
+- ✅ Logger module import
+- ✅ Log file creation
+- ✅ Rotation and compression
+- ✅ Sensitive data masking
+- ✅ Color console output
+- ✅ Different logging levels
+- ✅ Django check: no errors
 
-### 🚀 Миграция
+### 🚀 Migration
 
-Для разработчиков:
-1. Обновить зависимости: `pip install -r requirements.txt`
-2. При добавлении нового кода использовать `logger` вместо `print()`
-3. Маскировать чувствительные данные через `mask_sensitive()`
+For developers:
+1. Update dependencies: `pip install -r requirements.txt`
+2. Use `logger` instead of `print()` when adding new code
+3. Mask sensitive data with `mask_sensitive()`
 
-### 📦 Новые файлы
+### 📦 New Files
 
-- `catalog/logger.py` - конфигурация логирования
-- `LOGGING.md` - руководство по использованию
-- `logs/` - директория для файлов логов (игнорируется git)
+- `catalog/logger.py` - logging configuration
+- `LOGGING.md` - usage guide
+- `logs/` - directory for log files (ignored by git)
 
-### 🔄 Обратная совместимость
+### 🔄 Backward Compatibility
 
-Изменения полностью обратно совместимы. Все функции работают как прежде, но теперь с улучшенным логированием.
+Changes are fully backward compatible. All functions work as before, but now with improved logging.

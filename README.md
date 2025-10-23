@@ -1,94 +1,94 @@
-# Movie Tracker
+# NestFlix
 
-Movie Tracker - это веб-приложение на Django для отслеживания просмотренных фильмов, управления личной коллекцией и интеграции с внешними сервисами TMDB и Trakt.tv.
+NestFlix - is web application built with Django for tracking watched movies, managing personal collection and integrating with external services TMDB and Trakt.tv.
 
-## Функции
+## Features
 
-- **Личная библиотека фильмов**: Добавление, оценка и отслеживание просмотренных фильмов
-- **Публичная библиотека**: Просмотр популярных фильмов по средним оценкам пользователей
-- **Поиск фильмов**: Интеграция с TMDB API для поиска и получения информации о фильмах
-- **Импорт из Trakt.tv**: Синхронизация данных о просмотренных фильмах и оценках
-- **Plex Webhooks**: Автоматическое отслеживание просмотров из Plex Media Server (требует Plex Pass)
-- **Управление настройками**: Настройка API ключей для TMDB, Trakt и Plex webhooks
-- **Отзывчивый дизайн**: Адаптивный интерфейс с использованием Pico CSS
+- **Personal Movie Library**: Add, rate and track watched movies
+- **Public Library**: View popular movies by average user ratings
+- **Movie Search**: TMDB API integration for searching and fetching movie information
+- **Import from Trakt.tv**: Sync watched movies and ratings data
+- **Plex Webhooks**: Automatic tracking of views from Plex Media Server (requires Plex Pass)
+- **Settings Management**: Configure API keys for TMDB, Trakt and Plex webhooks
+- **Responsive Design**: Adaptive interface using Pico CSS
 
-## Технологии
+## Technologies
 
 - **Backend**: Django 5.2
 - **Frontend**: HTML, CSS (Pico CSS), JavaScript (HTMX)
-- **База данных**: SQLite (по умолчанию)
-- **Логирование**: Loguru с ротацией и архивированием
-- **Внешние API**:
+- **Database**: SQLite (by default)
+- **Logging**: Loguru with rotation and archiving
+- **External APIs**:
   - TMDB (The Movie Database)
   - Trakt.tv
-- **Дополнительно**: Background tasks для импорта данных
+- **Additional**: Background tasks for data import
 
-## Установка
+## Installation
 
-### Предварительные требования
+### Prerequisites
 
 - Python 3.8+
 - pip
 - Git
 
-### Шаги установки
+### Installation Steps
 
-1. **Клонируйте репозиторий:**
+1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/movie_tracker.git
-   cd movie_tracker
+   git clone https://github.com/yourusername/nestflix.git
+   cd nestflix
    ```
 
-2. **Создайте виртуальное окружение:**
+2. **Create a virtual environment:**
    ```bash
    python -m venv venv
-   source venv/bin/activate  # На Windows: venv\Scripts\activate
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. **Установите зависимости:**
+3. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Создайте файл `.env`:**
+4. **Create file `.env`:**
    ```bash
    cp .env.example .env
    ```
-   Отредактируйте `.env` файл с вашими настройками.
+   Edit `.env` file with your settings.
 
-4. **Примените миграции:**
+4. **Apply migrations:**
    ```bash
    python manage.py migrate
    ```
 
-5. **Создайте суперпользователя:**
+5. **Create a superuser:**
    ```bash
    python manage.py createsuperuser
    ```
 
-## Настройка
+## Configuration
 
-### API ключи
+### API Keys
 
-Для полноценной работы приложения необходимо настроить API ключи:
+To use the application fully, you need to configure API keys:
 
 1. **TMDB API Key**:
-   - Зарегистрируйтесь на [TMDB](https://www.themoviedb.org/)
-   - Получите API ключ в настройках аккаунта
-   - В приложении перейдите в "Настройки" и введите TMDB API Key
+   - Register on [TMDB](https://www.themoviedb.org/)
+   - Get your API key in account settings
+   - In the application go to "Settings" and enter TMDB API Key
 
 2. **Trakt.tv API**:
-   - Зарегистрируйтесь на [Trakt.tv](https://trakt.tv/)
-   - Перейдите в [Applications](https://trakt.tv/oauth/applications) и создайте новое приложение
-   - Заполните необходимые поля (Name, Description, Redirect uri можно указать `urn:ietf:wg:oauth:2.0:oob`)
-   - Получите **Client ID** (обязательно) и **Client Secret** (опционально)
-   - В приложении перейдите в "Настройки" и введите:
-     - **Trakt.tv Username** - ваш username на Trakt.tv
-     - **Trakt.tv Client ID** - Client ID вашего приложения
+   - Register on [Trakt.tv](https://trakt.tv/)
+   - Go to [Applications](https://trakt.tv/oauth/applications) and create a new application
+   - Fill in the required fields (Name, Description, Redirect uri you can specify `urn:ietf:wg:oauth:2.0:oob`)
+   - Получите **Client ID** (required) и **Client Secret** (optional)
+   - In the application go to "Settings" and enter:
+     - **Trakt.tv Username** - your username on Trakt.tv
+     - **Trakt.tv Client ID** - Client ID of your application
 
-### Переменные окружения
+### Environment Variables
 
-Создайте файл `.env` в корне проекта:
+Create file `.env` in project root:
 
 ```env
 SECRET_KEY=your_django_secret_key_here
@@ -96,149 +96,149 @@ DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 ```
 
-**Примечание**: API ключи для TMDB и Trakt.tv настраиваются через пользовательский интерфейс в разделе "Настройки" и хранятся в базе данных.
+**Note**: API Keys для TMDB и Trakt.tv are configured via user interface in "Settings" and stored in database.
 
-## Запуск
+## Running
 
-1. **Активируйте виртуальное окружение:**
+1. **Activate virtual environment:**
    ```bash
    source venv/bin/activate
    ```
 
-2. **Запустите сервер разработки:**
+2. **Run development server:**
    ```bash
    python manage.py runserver
    ```
 
-3. **Откройте браузер и перейдите по адресу:**
+3. **Open browser and go to:**
    ```
    http://localhost:8000
    ```
 
-## Использование
+## Usage
 
-### Для новых пользователей
+### For New Users
 
-1. Зарегистрируйтесь или войдите в систему
-2. Настройте TMDB API Key в разделе "Настройки"
-3. Начните поиск и добавление фильмов
+1. Register or login
+2. Configure TMDB API Key in Settings
+3. Start searching and adding movies
 
-### Основные возможности
+### Main Features
 
-- **Главная страница**: Просмотр популярных фильмов (для неавторизованных) или личной библиотеки (для авторизованных)
-- **Поиск фильмов**: Используйте поисковую строку для нахождения фильмов
-- **Добавление фильма**: Нажмите на фильм в результатах поиска для добавления в коллекцию
-- **Оценка фильмов**: Ставьте оценки и отмечайте просмотренные фильмы
-- **Импорт из Trakt**: Синхронизируйте данные из Trakt.tv аккаунта
+- **Home Page**: View popular movies (for unauthorized users) or personal library (for authorized users)
+- **Movie Search**: Use search bar to find movies
+- **Adding a Movie**: Click on a movie in search results to add to collection
+- **Rating Movies**: Rate and mark watched movies
+- **Импорт из Trakt**: Sync data from Trakt.tv account
 
-### Импорт из Trakt.tv
+### Import from Trakt.tv
 
-1. Настройте Trakt API в разделе "Настройки":
-   - Введите ваш Trakt.tv username
-   - Введите Client ID вашего Trakt приложения
-2. Перейдите в раздел "Настройки" (импорт доступен после настройки API)
-3. Нажмите "Импортировать из Trakt.tv"
-4. Система автоматически импортирует:
-   - Просмотренные фильмы
-   - Оценки фильмов и сериалов
-   - Историю просмотров
+1. Configure Trakt API in Settings:
+   - Enter your Trakt.tv username
+   - Enter Client ID inашего Trakt приложения
+2. Go to "Settings" (import available after API configuration)
+3. Click "Импортироinать из Trakt.tv"
+4. System will automatically import:
+   - Watched movies
+   - Movie and TV show ratings
+   - Watch history
 
-**Примечание**: Импорт выполняется в фоновом режиме. Одна активная задача импорта на пользователя.
+**Note**: Import runs in background. One active import task per user.
 
-### Plex Webhooks (требует Plex Pass)
+### Plex Webhooks (requires Plex Pass)
 
-1. Перейдите в раздел "Настройки"
-2. В секции "Plex Webhook" нажмите "Сгенерировать Webhook"
-3. Скопируйте сгенерированный URL
-4. Откройте [настройки Plex Webhooks](https://app.plex.tv/desktop/#!/account/webhooks)
-5. Добавьте скопированный URL
-6. Готово! Теперь просмотренные фильмы будут автоматически добавляться в вашу библиотеку
+1. Go to "Settings"
+2. В секции "Plex Webhook" нажмите "Сгенерироinать Webhook"
+3. Скопируйте сгенерироinанный URL
+4. Откройте [settings Plex Webhooks](https://app.plex.tv/desktop/#!/account/webhooks)
+5. Добаinьте скопироinанный URL
+6. Done! Now watched movies will be automatically added to your library
 
-**Поддерживаемые события:**
-- `media.scrobble` - фильм/сериал досмотрен (> 90%)
-- `media.play` - начало воспроизведения (добавление в коллекцию)
+**Supported events:**
+- `media.scrobble` - movie/show watched (> 90%)
+- `media.play` - playback started (add to collection)
 
-**Безопасность:** Каждый пользователь имеет уникальный токен. Можно перегенерировать или отключить в любой момент.
+**Security:** Each user has a unique token. Can be regenerated or disabled at any time.
 
-## Структура проекта
+## Project Structure
 
 ```
-movie_tracker/
-├── catalog/                 # Основное приложение
-│   ├── migrations/         # Миграции базы данных
-│   ├── templates/          # Шаблоны HTML
+nestflix/
+├── catalog/                 # Main application
+│   ├── migrations/         # Database migrations
+│   ├── templates/          # HTML templates
 │   │   └── catalog/
-│   ├── static/             # Статические файлы
-│   ├── models.py           # Модели данных
-│   ├── views.py            # Представления
-│   ├── urls.py             # URL маршруты
-│   ├── tmdb_client.py      # Клиент TMDB API
-│   ├── trakt_client.py     # Клиент Trakt API
-│   └── tasks.py            # Фоновые задачи
-├── movie_tracker/          # Настройки проекта
-│   ├── settings.py         # Основные настройки
-│   ├── urls.py             # Корневые URL
-│   └── wsgi.py             # WSGI конфигурация
-├── media/                  # Медиа файлы (загружаемые пользователями)
-├── staticfiles/            # Собранные статические файлы
-├── db.sqlite3              # База данных
-├── manage.py               # Скрипт управления Django
-├── requirements.txt        # Зависимости Python
-└── README.md               # Этот файл
+│   ├── static/             # Static files
+│   ├── models.py           # Data models
+│   ├── views.py            # Views
+│   ├── urls.py             # URL routes
+│   ├── tmdb_client.py      # TMDB API client
+│   ├── trakt_client.py     # Trakt API client
+│   └── tasks.py            # Background tasks
+├── nestflix/               # Project settings
+│   ├── settings.py         # Main settings
+│   ├── urls.py             # Root URLs
+│   └── wsgi.py             # WSGI configuration
+├── media/                  # Media files (uploaded by users)
+├── staticfiles/            # Collected static files
+├── db.sqlite3              # Database
+├── manage.py               # Django management script
+├── requirements.txt        # Python dependencies
+└── README.md               # This file
 ```
 
-## Модели данных
+## Data models
 
-- **Movie**: Информация о фильме (TMDB ID, данные из API)
-- **UserRating**: Оценки пользователей, статус просмотра
-- **UserSettings**: Настройки пользователя (API ключи)
-- **ImportTask**: Задачи импорта из Trakt.tv
+- **Movie**: Movie information (TMDB ID, data from API)
+- **UserRating**: User ratings, watch status
+- **UserSettings**: User settings (API Keys)
+- **ImportTask**: Import tasks from Trakt.tv
 
 ## API интеграции
 
 ### TMDB API
-- Поиск фильмов
-- Получение детальной информации о фильмах
-- Постеры и изображения
+- Movie Search
+- Get detailed movie information
+- Posters and images
 
 ### Trakt.tv API
-- **Тип аутентификации**: Client ID (без OAuth)
-- **Данные для импорта**:
-  - Просмотренные фильмы
-  - Оценки фильмов и сериалов  
-  - История просмотров
-- **Особенности**: Импорт через публичный API без необходимости полной OAuth аутентификации
+- **Authentication type**: Client ID (without OAuth)
+- **Data to import**:
+  - Watched movies
+  - Movie and TV show ratings  
+  - История просмотроin
+- **Features**: Import via public API without full OAuth authentication
 
-## Разработка
+## Development
 
-### Добавление новых функций
+### Adding New Features
 
-1. Создайте новую ветку для разработки
-2. Реализуйте функцию
-3. Напишите тесты
-4. Создайте pull request
+1. Create a new development branch
+2. Implement the feature
+3. Write tests
+4. Create a pull request
 
-### Стиль кода
+### Code Style
 
-- Следуйте PEP 8 для Python кода
-- Используйте осмысленные названия переменных и функций
-- Добавляйте комментарии к сложным участкам кода
+- Follow PEP 8 for Python code
+- Use meaningful variable and function names
+- Add comments to complex code sections
 
-## Развертывание
+## Deployment
 
-### Production настройки
+### Production settings
 
-1. Установите `DEBUG=False` в settings.py
-2. Настройте статические файлы:
+1. Set `DEBUG=False` in settings.py
+2. Configure static files:
    ```bash
    python manage.py collectstatic
    ```
-3. Используйте production-ready веб-сервер (Gunicorn, uWSGI)
-4. Настройте базу данных (PostgreSQL рекомендуется для production)
+3. Use production-ready web server (Gunicorn, uWSGI)
+4. Configure базу данных (PostgreSQL recommended for production)
 
 ### Docker
 
-Для развертывания с Docker:
+For Docker deployment:
 
 ```dockerfile
 FROM python:3.11-slim
@@ -254,54 +254,54 @@ RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-CMD ["gunicorn", "movie_tracker.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "nestflix.wsgi:application", "--bind", "0.0.0.0:8000"]
 ```
 
-## Логирование
+## Logging
 
-Проект использует **Loguru** для структурированного логирования:
+Проект использует **Loguru** для структурироinанного логироinания:
 
-- **Файлы логов**:
-  - `logs/movie_tracker.log` - все сообщения (DEBUG и выше), ротация 10 МБ, хранение 30 дней
-  - `logs/errors.log` - только ошибки (ERROR и выше), ротация 10 МБ, хранение 60 дней
+- **Файлы логоin**:
+  - `logs/nestflix.log` - all messages (DEBUG and above), rotation 10 MB, retention 30 days
+  - `logs/errors.log` - только ошибки (ERROR и inыше), ротация 10 МБ, хранение 60 дней
 
-- **Уровни логирования**:
+- **Уроinни логироinания**:
   - `DEBUG` - детальная отладочная информация
   - `INFO` - информационные сообщения о работе приложения
   - `ERROR` - сообщения об ошибках
 
-- **Безопасность**: API ключи и другие чувствительные данные автоматически маскируются в логах
+- **Security**: API Keys и другие чуinстinительные данные аinтоматически маскируются in логах
 
-## Тестирование
+## Testing
 
 ```bash
 python manage.py test
 ```
 
-## Вклад в проект
+## Contributing
 
 1. Fork репозиторий
 2. Создайте feature branch
 3. Commit изменения
-4. Push в branch
+4. Push in branch
 5. Создайте Pull Request
 
-## Лицензия
+## License
 
-Этот проект лицензирован под MIT License - см. файл LICENSE для деталей.
+Этот проект лицензироinан под MIT License - см. файл LICENSE для деталей.
 
-## Поддержка
+## Support
 
-Если у вас возникли проблемы или вопросы:
+Если у inас inозникли проблемы или inопросы:
 
-1. Проверьте раздел Troubleshooting в документации
-2. Создайте issue на GitHub
-3. Свяжитесь с разработчиками
+1. Check Troubleshooting section in documentation
+2. Create an issue on GitHub
+3. Contact developers
 
 ## Changelog
 
 ### v1.0.0
-- Первая стабильная версия
-- Базовая функциональность трекинга фильмов
+- First stable release
+- Basic movie tracking functionality
 - Интеграция с TMDB и Trakt.tv
-- Отзывчивый веб-интерфейс
+- Responsive web interface

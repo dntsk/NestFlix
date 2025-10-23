@@ -1,120 +1,120 @@
-# Руководство по логированию
+# Logging Guide
 
-## Обзор
+## Overview
 
-Проект использует библиотеку **Loguru** для структурированного и эффективного логирования.
+The project uses **Loguru** library for structured and efficient logging.
 
-## Конфигурация
+## Configuration
 
-Настройки логирования находятся в `catalog/logger.py`:
+Logging settings are located in `catalog/logger.py`:
 
-- **Консольный вывод**: INFO и выше, с цветовым выделением
-- **Файловое логирование**:
-  - `logs/movie_tracker.log` - все сообщения (DEBUG+)
-  - `logs/errors.log` - только ошибки (ERROR+)
-- **Ротация**: 10 МБ с автоматической архивацией в ZIP
-- **Хранение**: 30 дней для основных логов, 60 дней для ошибок
+- **Console Output**: INFO and above, with color highlighting
+- **File Logging**:
+  - `logs/nestflix.log` - all messages (DEBUG+)
+  - `logs/errors.log` - errors only (ERROR+)
+- **Rotation**: 10 MB with automatic ZIP archiving
+- **Retention**: 30 days for main logs, 60 days for errors
 
-## Использование
+## Usage
 
-### Базовый импорт
+### Basic Import
 
 ```python
 from .logger import logger, mask_sensitive
 ```
 
-### Примеры логирования
+### Logging Examples
 
 ```python
-# Информационные сообщения
-logger.info("Пользователь успешно авторизован")
+# Information messages
+logger.info("User successfully authenticated")
 
-# Отладочная информация
-logger.debug(f"Получено {count} записей из API")
+# Debug information
+logger.debug(f"Received {count} records from API")
 
-# Ошибки
-logger.error(f"Не удалось подключиться к API: {error}")
+# Errors
+logger.error(f"Failed to connect to API: {error}")
 
-# Предупреждения
-logger.warning("API ключ не настроен")
+# Warnings
+logger.warning("API key not configured")
 ```
 
-### Маскировка чувствительных данных
+### Masking Sensitive Data
 
 ```python
-# Маскировка API ключей и токенов
+# Masking API keys and tokens
 api_key = "1234567890abcdef1234567890abcdef"
 logger.info(f"API key: {mask_sensitive(api_key)}")
-# Вывод: API key: 1234...cdef
+# Output: API key: 1234...cdef
 
-# Короткие значения полностью скрываются
+# Short values are fully hidden
 short_value = "123"
 logger.info(f"Value: {mask_sensitive(short_value)}")
-# Вывод: Value: ***
+# Output: Value: ***
 ```
 
-## Уровни логирования
+## Logging Levels
 
-| Уровень  | Использование |
-|----------|---------------|
-| DEBUG    | Детальная отладочная информация для разработки |
-| INFO     | Подтверждение нормальной работы приложения |
-| WARNING  | Предупреждения о потенциальных проблемах |
-| ERROR    | Ошибки, требующие внимания |
+| Level    | Usage |
+|----------|-------|
+| DEBUG    | Detailed debugging information for development |
+| INFO     | Confirmation of normal application operation |
+| WARNING  | Warnings about potential issues |
+| ERROR    | Errors requiring attention |
 
-## Правила безопасности
+## Security Rules
 
-⚠️ **НИКОГДА** не логируйте:
-- Полные API ключи
-- Пароли
-- Токены авторизации
-- Персональные данные пользователей
+⚠️ **NEVER** log:
+- Full API keys
+- Passwords
+- Authorization tokens
+- User personal data
 
-✅ **ВСЕГДА** используйте `mask_sensitive()` для:
-- API ключей (TMDB, Trakt)
+✅ **ALWAYS** use `mask_sensitive()` for:
+- API keys (TMDB, Trakt)
 - Client ID
-- Любых секретных значений
+- Any secret values
 
-## Просмотр логов
+## Viewing Logs
 
 ```bash
-# Последние записи из основного лога
-tail -f logs/movie_tracker.log
+# Latest entries from main log
+tail -f logs/nestflix.log
 
-# Только ошибки
+# Errors only
 tail -f logs/errors.log
 
-# Поиск по логам
-grep "import" logs/movie_tracker.log
+# Search in logs
+grep "import" logs/nestflix.log
 ```
 
-## Интеграция в новый код
+## Integration in New Code
 
-При добавлении нового функционала:
+When adding new functionality:
 
-1. Импортируйте logger в начале файла:
+1. Import logger at the beginning of file:
    ```python
    from .logger import logger, mask_sensitive
    ```
 
-2. Замените все `print()` на соответствующие вызовы logger:
+2. Replace all `print()` with appropriate logger calls:
    ```python
-   # Было
+   # Before
    print(f"Starting task: {task_id}")
    
-   # Стало
+   # After
    logger.info(f"Starting task: {task_id}")
    ```
 
-3. Маскируйте чувствительные данные:
+3. Mask sensitive data:
    ```python
    logger.debug(f"API key: {mask_sensitive(api_key)}")
    ```
 
-## Мониторинг в production
+## Production Monitoring
 
-Рекомендуется настроить:
-- Мониторинг размера директории `logs/`
-- Алерты на ERROR сообщения
-- Регулярную ротацию логов (автоматическая)
-- Бэкап архивов логов
+Recommended setup:
+- Monitor `logs/` directory size
+- Alerts for ERROR messages
+- Regular log rotation (automatic)
+- Log archive backups

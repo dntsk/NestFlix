@@ -25,7 +25,7 @@ def movie_search(request):
         tmdb_api_key = None
 
     if not tmdb_api_key:
-        return render(request, 'catalog/search.html', {'error': 'Настройте TMDB API Key в разделе настроек'})
+        return render(request, 'catalog/search.html', {'error': 'Please configure TMDB API Key in settings'})
 
     if request.META.get('HTTP_HX_REQUEST') and 'query' in request.GET:
         query = request.GET.get('query')
@@ -51,15 +51,15 @@ def add_movie(request, media_type, tmdb_id):
         settings_obj = UserSettings.objects.get(user=request.user)
         tmdb_api_key = settings_obj.tmdb_api_key
     except UserSettings.DoesNotExist:
-        return HttpResponse('<p>Настройте TMDB API Key в разделе настроек</p>', status=400)
+        return HttpResponse('<p>Please configure TMDB API Key in settings</p>', status=400)
 
     if not tmdb_api_key:
-        return HttpResponse('<p>Настройте TMDB API Key в разделе настроек</p>', status=400)
+        return HttpResponse('<p>Please configure TMDB API Key in settings</p>', status=400)
 
     if request.method in ['POST', 'PUT']:
         movie_data = get_movie_details(media_type, tmdb_id, tmdb_api_key)
         if not movie_data:
-            return HttpResponse('<p>Ошибка загрузки данных.</p>', status=500)
+            return HttpResponse('<p>Data loading error.</p>', status=500)
         title = movie_data.get('title', movie_data.get('name', 'Unknown'))
         movie, created = Movie.objects.get_or_create(
             tmdb_id=tmdb_id,
@@ -74,8 +74,8 @@ def add_movie(request, media_type, tmdb_id):
             movie.save()
         # Create UserRating if not exists
         UserRating.objects.get_or_create(user=request.user, movie=movie)
-        return HttpResponse('<p>Успешно добавлено!</p>')
-    return HttpResponse('Ошибка', status=400)
+        return HttpResponse('<p>Successfully added!</p>')
+    return HttpResponse('Error', status=400)
 
 @login_required
 def movie_detail(request, tmdb_id):
@@ -93,7 +93,7 @@ def movie_detail(request, tmdb_id):
         if rating:
             user_rating.rating = int(rating)
             user_rating.save()
-            messages.success(request, 'Оценка обновлена!')
+            messages.success(request, 'Rating updated!')
             return redirect('catalog:movie_detail', tmdb_id=tmdb_id)
     # Prepare data for template
     data = movie.data or {}

@@ -1,75 +1,75 @@
-# AGENTS.md - Руководство по кодовой базе Movie Tracker
+# AGENTS.md - NestFlix Codebase Guide
 
-## Команды сборки/тестирования
-- `make server` - Запуск Django сервера разработки
-- `make worker` - Запуск воркера фоновых задач
-- `make migrate` - Применение миграций базы данных
-- `python manage.py test` - Запуск всех тестов
-- `python manage.py test catalog.tests` - Запуск тестов приложения catalog
-- `python manage.py test catalog.tests.ClassName` - Запуск конкретного класса тестов
-- `python manage.py test catalog.tests.ClassName.test_method` - Запуск одного теста
+## Build/Test Commands
+- `make server` - Run Django development server
+- `make worker` - Run background task worker
+- `make migrate` - Apply database migrations
+- `python manage.py test` - Run all tests
+- `python manage.py test catalog.tests` - Run catalog app tests
+- `python manage.py test catalog.tests.ClassName` - Run specific test class
+- `python manage.py test catalog.tests.ClassName.test_method` - Run single test
 
-## Правила стиля кода
-- **Импорты**: Сначала стандартные Django импорты, затем сторонние, затем локальные приложения
-- **Форматирование**: 4-пробельных отступа, максимальная длина строки 79 символов
-- **Именование**: snake_case для переменных/функций, PascalCase для классов
-- **Обработка ошибок**: Использовать try/except с конкретными исключениями
-- **Модели**: Использовать verbose_name и help_text для полей
-- **Представления**: Использовать декоратор @login_required для views требующих авторизации
-- **Шаблоны**: Использовать язык шаблонов Django с правильным наследованием
-- **Типизация**: В настоящее время не используется, следовать существующим шаблонам
+## Code Style Rules
+- **Imports**: Standard Django imports first, then third-party, then local apps
+- **Formatting**: 4-space indentation, maximum line length 79 characters
+- **Naming**: snake_case for variables/functions, PascalCase for classes
+- **Error Handling**: Use try/except with specific exceptions
+- **Models**: Use verbose_name and help_text for fields
+- **Views**: Use @login_required decorator for views requiring authorization
+- **Templates**: Use Django template language with proper inheritance
+- **Type Hints**: Currently not used, follow existing patterns
 
-## Тестирование
-- Писать тесты в catalog/tests.py следуя паттернам Django TestCase
-- Использовать осмысленные имена методов тестов начинающиеся с "test_"
-- Тестировать как успешные сценарии, так и случаи ошибок
-- Мокировать вызовы внешних API в тестах
+## Testing
+- Write tests in catalog/tests.py following Django TestCase patterns
+- Use meaningful test method names starting with "test_"
+- Test both success scenarios and error cases
+- Mock external API calls in tests
 
-## Логирование
-- **Библиотека**: loguru (вместо print)
-- **Конфигурация**: catalog/logger.py
-- **Файлы логов**:
-  - logs/movie_tracker.log (уровень DEBUG, ротация 10 МБ, хранение 30 дней)
-  - logs/errors.log (уровень ERROR, ротация 10 МБ, хранение 60 дней)
-- **Импорт**: `from .logger import logger, mask_sensitive`
-- **Использование**:
+## Logging
+- **Library**: loguru (instead of print)
+- **Configuration**: catalog/logger.py
+- **Log Files**:
+  - logs/nestflix.log (DEBUG level, 10 MB rotation, 30 days retention)
+  - logs/errors.log (ERROR level, 10 MB rotation, 60 days retention)
+- **Import**: `from .logger import logger, mask_sensitive`
+- **Usage**:
   ```python
-  logger.info("Информационное сообщение")
-  logger.debug("Отладочная информация")
-  logger.error("Сообщение об ошибке")
-  logger.warning("Предупреждение")
+  logger.info("Information message")
+  logger.debug("Debug information")
+  logger.error("Error message")
+  logger.warning("Warning")
   
-  # Маскировка чувствительных данных
+  # Masking sensitive data
   logger.info(f"API key: {mask_sensitive(api_key)}")
   ```
 
 ## Plex Webhook Integration
 - **Endpoint**: `/webhook/plex/<token>/` (CSRF exempt)
-- **Генерация токена**: `/settings/generate-plex-webhook/` (POST)
-- **Отключение**: `/settings/disable-plex-webhook/` (POST)
-- **Модели**:
-  - `UserSettings`: поля `plex_webhook_token`, `plex_webhook_enabled`, `plex_webhook_created_at`
-  - `PlexWebhookEvent`: логирование всех webhook событий для аудита
-- **Обработка**: `catalog/plex_utils.py`
-  - `extract_tmdb_id_from_plex_guid()` - парсинг TMDB ID из Plex GUID
-  - `process_plex_event()` - обработка событий (media.play, media.scrobble)
-  - `log_webhook_event()` - сохранение событий в БД
-- **Безопасность**:
-  - Уникальный UUID токен для каждого пользователя
-  - Логирование всех запросов
-  - Возможность отключения/перегенерации
-  - Маскировка токенов в логах
+- **Token Generation**: `/settings/generate-plex-webhook/` (POST)
+- **Disable**: `/settings/disable-plex-webhook/` (POST)
+- **Models**:
+  - `UserSettings`: fields `plex_webhook_token`, `plex_webhook_enabled`, `plex_webhook_created_at`
+  - `PlexWebhookEvent`: logs all webhook events for audit
+- **Processing**: `catalog/plex_utils.py`
+  - `extract_tmdb_id_from_plex_guid()` - parse TMDB ID from Plex GUID
+  - `process_plex_event()` - handle events (media.play, media.scrobble)
+  - `log_webhook_event()` - save events to DB
+- **Security**:
+  - Unique UUID token for each user
+  - All requests logged
+  - Can be disabled/regenerated
+  - Token masking in logs
 
-## Правила безопасного кода
-- **Защита чувствительных данных**: API ключи и Client ID должны маскироваться в логах (первые 4 и последние 4 символа)
-- **Логирование**: 
-  - Использовать loguru для всех сообщений
-  - Никогда не логировать полные API ключи, пароли или токены
-  - Использовать функцию mask_sensitive() из catalog.logger для маскировки
-  - Уровни: DEBUG для отладки, INFO для информации, ERROR для ошибок
-- **Админка**: В интерфейсе администратора отображать только маскированные версии чувствительных данных
-- **Валидация**: Проверять длину и формат API ключей (TMDB: 32 символа, Trakt: 64 символа)
-- **CSRF защита**: Все формы должны содержать {% csrf_token %}
-- **Rate limiting**: Ограничивать частоту запросов для предотвращения злоупотреблений
-- **Обработка ошибок**: Не раскрывать детали внутренних ошибок в ответах API
-- **Хранение данных**: Чувствительные данные должны храниться в зашифрованном виде в базе данных
+## Secure Code Rules
+- **Sensitive Data Protection**: API keys and Client IDs must be masked in logs (first 4 and last 4 characters)
+- **Logging**: 
+  - Use loguru for all messages
+  - Never log full API keys, passwords, or tokens
+  - Use mask_sensitive() function from catalog.logger for masking
+  - Levels: DEBUG for debugging, INFO for information, ERROR for errors
+- **Admin Panel**: Display only masked versions of sensitive data in admin interface
+- **Validation**: Check API key length and format (TMDB: 32 characters, Trakt: 64 characters)
+- **CSRF Protection**: All forms must contain {% csrf_token %}
+- **Rate Limiting**: Limit request frequency to prevent abuse
+- **Error Handling**: Do not expose internal error details in API responses
+- **Data Storage**: Sensitive data must be stored encrypted in database
