@@ -1,3 +1,4 @@
+{% if results %}
 <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
 {% for result in results %}
 <article style="text-align: center; padding: 1rem; background-color: #ffffff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s; display: flex; flex-direction: column;">
@@ -16,10 +17,11 @@
     <a href="{% url 'catalog:movie_detail' result.id %}" style="margin-top: auto; padding: 0.25rem 0.5rem; font-size: 0.875rem; display: inline-block; text-decoration: none; color: var(--primary); border: 1px solid var(--primary); border-radius: 4px;">Already in Collection</a>
     {% endif %}
 </article>
-{% empty %}
-<p>Nothing found.</p>
 {% endfor %}
 </div>
+{% elif query %}
+<p style="text-align: center; color: var(--muted); padding: 2rem;">Nothing found for "{{ query }}"</p>
+{% endif %}
 <script>
 htmx.on('htmx:beforeRequest', function(evt) {
     console.log('HTMX add request:', evt.detail.requestConfig);
