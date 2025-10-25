@@ -5,7 +5,7 @@ from .tmdb_client import get_movie_details
 from .logger import logger
 
 
-def extract_tmdb_id_from_plex_guid(guid):
+def extract_tmdb_id_from_plex_guid(guid, guid_list=None):
     """
     Extract TMDB ID from Plex GUID
     
@@ -13,6 +13,8 @@ def extract_tmdb_id_from_plex_guid(guid):
     - tmdb://123456
     - com.plexapp.agents.themoviedb://123456?lang=en
     - plex://movie/5d776825880197001ec90e31 (not supported, returns None)
+    
+    If guid_list is provided, also search in Guid array from Plex metadata
     """
     if not guid:
         return None
@@ -26,6 +28,21 @@ def extract_tmdb_id_from_plex_guid(guid):
         match = re.search(r'themoviedb://(\d+)', guid)
         if match:
             return int(match.group(1))
+    
+    # Try to extract from Guid array
+    if guid_list:
+        for guid_obj in guid_list:
+            guid_id = guid_obj.get('id', '')
+            if guid_id.startswith('tmdb://'):
+                match = re.search(r'tmdb://(\d+)', guid_id)
+                if match:
+                    logger.debug(f"Found TMDB ID in Guid array: {match.group(1)}")
+                    return int(match.group(1))
+            if 'themoviedb' in guid_id:
+                match = re.search(r'themoviedb://(\d+)', guid_id)
+                if match:
+                    logger.debug(f"Found TMDB ID in Guid array: {match.group(1)}")
+                    return int(match.group(1))
     
     logger.warning(f"Could not parse TMDB ID from Plex GUID: {guid}")
     return None
@@ -46,24 +63,39 @@ def process_plex_event(user, event, payload):
         return False
     
     guid = metadata.get('guid', '')
-    tmdb_id = extract_tmdb_id_from_plex_guid(guid)
-    
-    if not tmdb_id:
-        logger.warning(f"Could not extract TMDB ID from guid: {guid}")
-        return False
+    guid_list = metadata.get('Guid', [])
     
     media_type = metadata.get('type')
     title_from_plex = metadata.get('title', 'Unknown')
     
     if media_type == 'episode':
         media_type = 'tv'
+        
+        # For episodes, TMDB ID should be extracted from show (grandparent)
         show_guid = metadata.get('grandparentGuid', '')
-        extracted_show_id = extract_tmdb_id_from_plex_guid(show_guid)
-        if extracted_show_id:
-            tmdb_id = extracted_show_id
-            title_from_plex = metadata.get('grandparentTitle', title_from_plex)
+        
+        # Try to extract TMDB ID from show GUID first
+        tmdb_id = extract_tmdb_id_from_plex_guid(show_guid)
+        
+        # If show GUID is plex:// format, check if episode has Guid array with TMDB
+        if not tmdb_id and guid_list:
+            tmdb_id = extract_tmdb_id_from_plex_guid(guid, guid_list)
+        
+        if not tmdb_id:
+            logger.warning(f"Could not extract TMDB ID from episode guid: {guid}, show guid: {show_guid}, Guid array: {guid_list}")
+            return False
+            
+        title_from_plex = metadata.get('grandparentTitle', title_from_plex)
+        
     elif media_type == 'movie':
         media_type = 'movie'
+        
+        # Try to extract from movie GUID
+        tmdb_id = extract_tmdb_id_from_plex_guid(guid, guid_list)
+        
+        if not tmdb_id:
+            logger.warning(f"Could not extract TMDB ID from movie guid: {guid}, Guid array: {guid_list}")
+            return False
     else:
         logger.warning(f"Unknown Plex media type: {media_type}")
         return False
