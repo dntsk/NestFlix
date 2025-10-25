@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(BASE_DIR))
 
 # Устанавливаем переменную окружения для Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'movie_tracker.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'nestflix.settings')
 
 import django
 django.setup()
