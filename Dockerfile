@@ -19,7 +19,7 @@ COPY . .
 
 RUN python manage.py compilemessages --ignore=venv
 
-RUN mkdir -p /app/db && \
+RUN mkdir -p /app/db /app/staticfiles && \
     chmod +x start.sh
 
 EXPOSE 8000
