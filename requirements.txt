@@ -6,3 +6,4 @@ bandit>=1.8.6
 safety>=3.6.1
 loguru>=0.7.0
 django-background-tasks>=1.2.8
+gunicorn>=21.2.0

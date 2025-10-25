@@ -45,7 +45,7 @@ fi
 # Запускаем сервер
 echo "🌐 Запуск Django сервера..."
 echo "========================================"
-python manage.py runserver
+gunicorn nestflix.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 120
 
 # При завершении сервера завершаем воркер
 cleanup
