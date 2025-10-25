@@ -3,15 +3,16 @@ from datetime import datetime
 from django.utils import timezone
 from .models import ImportTask, Movie, UserRating
 from .trakt_client import get_watched_movies, get_watched_shows, get_rated_movies, get_rated_shows
-from .tmdb_client import get_movie_details
+from .tmdb_client import get_movie_details, get_tmdb_language
 from .logger import logger, mask_sensitive
 
 @background(schedule=0)
-def import_trakt_data_task(task_id, user_id, username, client_id, tmdb_key):
+def import_trakt_data_task(task_id, user_id, username, client_id, tmdb_key, language='en'):
     """Фоновая задача импорта данных из Trakt.tv"""
     task = None
+    tmdb_language = get_tmdb_language(language)
     try:
-        logger.info(f"Starting import task: {task_id}")
+        logger.info(f"Starting import task: {task_id} with language: {language}")
         logger.debug(f"Parameters: user_id={user_id}, username='{username}', client_id={mask_sensitive(client_id)}, tmdb_key={mask_sensitive(tmdb_key)}")
 
         task = ImportTask.objects.get(task_id=task_id)
@@ -77,7 +78,7 @@ def import_trakt_data_task(task_id, user_id, username, client_id, tmdb_key):
 
         for i, (key, item) in enumerate(all_items.items()):
             try:
-                movie_data = get_movie_details(item['media_type'], item['tmdb_id'], tmdb_key)
+                movie_data = get_movie_details(item['media_type'], item['tmdb_id'], tmdb_key, tmdb_language)
                 if movie_data:
                     final_title = movie_data.get('title') or movie_data.get('name') or item['title']
                     logger.debug(f"Import item: Trakt='{item['title']}', TMDB='{final_title}'")

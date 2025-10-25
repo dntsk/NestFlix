@@ -32,6 +32,12 @@ class UserSettings(models.Model):
     plex_webhook_token = models.CharField(max_length=64, blank=True, unique=True, null=True, verbose_name="Plex Webhook Token")
     plex_webhook_enabled = models.BooleanField(default=False, verbose_name="Plex Webhook Enabled")
     plex_webhook_created_at = models.DateTimeField(null=True, blank=True, verbose_name="Plex Webhook Created")
+    language = models.CharField(
+        max_length=10,
+        choices=[('en', 'English'), ('ru', 'Русский')],
+        default='en',
+        verbose_name="Interface Language"
+    )
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 

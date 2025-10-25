@@ -4,17 +4,25 @@ from .logger import logger, mask_sensitive
 
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
 
-def search_movies(query: str, api_key: str) -> list[dict]:
+def get_tmdb_language(user_language: str) -> str:
+    """Convert Django language code to TMDB API language format."""
+    language_map = {
+        'en': 'en-US',
+        'ru': 'ru-RU',
+    }
+    return language_map.get(user_language, 'en-US')
+
+def search_movies(query: str, api_key: str, language: str = 'en-US') -> list[dict]:
     """Search for movies and TV shows using TMDB API."""
     results = []
-    logger.debug(f"Searching TMDB for query: '{query}'")
+    logger.debug(f"Searching TMDB for query: '{query}' with language: {language}")
     
     try:
         url = f"{TMDB_BASE_URL}/search/movie"
         params = {
             'api_key': api_key,
             'query': query,
-            'language': 'ru-RU',
+            'language': language,
         }
         response = requests.get(url, params=params)
         response.raise_for_status()
@@ -39,7 +47,7 @@ def search_movies(query: str, api_key: str) -> list[dict]:
         params = {
             'api_key': api_key,
             'query': query,
-            'language': 'ru-RU',
+            'language': language,
         }
         response = requests.get(url, params=params)
         response.raise_for_status()
@@ -62,15 +70,15 @@ def search_movies(query: str, api_key: str) -> list[dict]:
     logger.debug(f"Total results for '{query}': {len(results)}")
     return results
 
-def get_movie_details(media_type: str, tmdb_id: int, api_key: str) -> dict:
+def get_movie_details(media_type: str, tmdb_id: int, api_key: str, language: str = 'en-US') -> dict:
     """Get detailed movie/TV information from TMDB API."""
     try:
         url = f"{TMDB_BASE_URL}/{media_type}/{tmdb_id}"
         params = {
             'api_key': api_key,
-            'language': 'ru-RU',
+            'language': language,
         }
-        logger.debug(f"Fetching TMDB details: {media_type}/{tmdb_id}")
+        logger.debug(f"Fetching TMDB details: {media_type}/{tmdb_id} with language: {language}")
         response = requests.get(url, params=params)
         response.raise_for_status()
         data = response.json()

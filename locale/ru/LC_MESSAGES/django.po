@@ -1,0 +1,185 @@
+# Russian translations for NestFlix.
+# Copyright (C) 2025
+# This file is distributed under the same license as the NestFlix package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NestFlix 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-25 09:02+0000\n"
+"PO-Revision-Date: 2025-10-23 18:20+0000\n"
+"Last-Translator: \n"
+"Language-Team: Russian\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
+"(n%100>=11 && n%100<=14)? 2 : 3);\n"
+
+#: catalog/templates/catalog/base.html:110
+#: catalog/templates/catalog/my_library.html:66
+msgid "Add Movie"
+msgstr "Добавить фильм"
+
+#: catalog/templates/catalog/base.html:111
+#: catalog/templates/catalog/user_settings.html:4
+#: catalog/templates/catalog/user_settings.html:28
+msgid "Settings"
+msgstr "Настройки"
+
+#: catalog/templates/catalog/base.html:115
+msgid "Logout"
+msgstr "Выход"
+
+#: catalog/templates/catalog/base.html:117
+msgid "Login"
+msgstr "Вход"
+
+#: catalog/templates/catalog/base.html:151
+msgid "Import completed successfully!"
+msgstr "Импорт успешно завершен!"
+
+#: catalog/templates/catalog/base.html:152
+msgid "Import error"
+msgstr "Ошибка импорта"
+
+#: catalog/templates/catalog/base.html:152
+msgid "Unknown error"
+msgstr "Неизвестная ошибка"
+
+#: catalog/templates/catalog/movie_detail.html:16
+#: catalog/templates/catalog/my_library.html:22
+msgid "No Poster"
+msgstr "Нет постера"
+
+#: catalog/templates/catalog/movie_detail.html:24
+msgid "Year"
+msgstr "Год"
+
+#: catalog/templates/catalog/movie_detail.html:29
+msgid "TMDB Rating"
+msgstr "Рейтинг TMDB"
+
+#: catalog/templates/catalog/movie_detail.html:35
+msgid "Your Rating"
+msgstr "Ваша оценка"
+
+#: catalog/templates/catalog/movie_detail.html:41
+msgid "Overview"
+msgstr "Описание"
+
+#: catalog/templates/catalog/movie_detail.html:48
+msgid "Change Rating"
+msgstr "Изменить оценку"
+
+#: catalog/templates/catalog/movie_detail.html:52
+msgid "Rating"
+msgstr "Оценка"
+
+#: catalog/templates/catalog/movie_detail.html:56
+msgid "Save"
+msgstr "Сохранить"
+
+#: catalog/templates/catalog/my_library.html:4
+#: catalog/templates/catalog/my_library.html:7
+msgid "My Collection"
+msgstr "Моя коллекция"
+
+#: catalog/templates/catalog/my_library.html:4
+#: catalog/templates/catalog/my_library.html:7
+msgid "Popular Movies"
+msgstr "Популярные фильмы"
+
+#: catalog/templates/catalog/my_library.html:9
+msgid "Top movies by average user rating"
+msgstr "Топ фильмов по среднему рейтингу пользователей"
+
+#: catalog/templates/catalog/my_library.html:30
+msgid "Watched"
+msgstr "Просмотрен"
+
+#: catalog/templates/catalog/my_library.html:52
+msgid "First"
+msgstr "Первая"
+
+#: catalog/templates/catalog/my_library.html:53
+msgid "Previous"
+msgstr "Предыдущая"
+
+#: catalog/templates/catalog/my_library.html:55
+msgid "of"
+msgstr "из"
+
+#: catalog/templates/catalog/my_library.html:57
+msgid "Next"
+msgstr "Следующая"
+
+#: catalog/templates/catalog/my_library.html:58
+msgid "Last"
+msgstr "Последняя"
+
+#: catalog/templates/catalog/my_library.html:65
+msgid "Your collection is empty."
+msgstr "Ваша коллекция пуста."
+
+#: catalog/templates/catalog/user_settings.html:29
+msgid "Configure your personal settings and API keys."
+msgstr "Настройте ваши персональные параметры и API ключи."
+
+#: catalog/templates/catalog/user_settings.html:34
+msgid "Interface"
+msgstr "Интерфейс"
+
+#: catalog/templates/catalog/user_settings.html:36
+msgid "Language"
+msgstr "Язык"
+
+#: catalog/templates/catalog/user_settings.html:41
+msgid "Select your preferred interface language"
+msgstr "Выберите предпочитаемый язык интерфейса"
+
+#: catalog/templates/catalog/user_settings.html:43
+msgid "API Settings"
+msgstr "Настройки API"
+
+#: catalog/templates/catalog/user_settings.html:44
+msgid "Configure API keys to connect to external services."
+msgstr "Настройте API ключи для подключения к внешним сервисам."
+
+#: catalog/templates/catalog/user_settings.html:46
+msgid "TMDB API Key"
+msgstr "TMDB API ключ"
+
+#: catalog/templates/catalog/user_settings.html:47
+msgid "Enter your TMDB API Key"
+msgstr "Введите ваш TMDB API ключ"
+
+#: catalog/templates/catalog/user_settings.html:48
+msgid "Get your key at"
+msgstr "Получите ключ на"
+
+#: catalog/templates/catalog/user_settings.html:50
+msgid "Trakt.tv Username"
+msgstr "Имя пользователя Trakt.tv"
+
+#: catalog/templates/catalog/user_settings.html:51
+msgid "Your username on Trakt.tv"
+msgstr "Ваше имя пользователя на Trakt.tv"
+
+#: catalog/templates/catalog/user_settings.html:53
+msgid "Trakt.tv Client ID"
+msgstr "Trakt.tv Client ID"
+
+#: catalog/templates/catalog/user_settings.html:54
+msgid "Your application Client ID"
+msgstr "Client ID вашего приложения"
+
+#: catalog/templates/catalog/user_settings.html:55
+msgid "Create an application at"
+msgstr "Создайте приложение на"
+
+#: catalog/templates/catalog/user_settings.html:57
+msgid "Save Settings"
+msgstr "Сохранить настройки"

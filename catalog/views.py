@@ -7,7 +7,7 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 from datetime import datetime
 from .models import Movie, UserRating, UserSettings, ImportTask
-from .tmdb_client import search_movies, get_movie_details
+from .tmdb_client import search_movies, get_movie_details, get_tmdb_language
 from .trakt_client import get_watched_movies, get_watched_shows, get_rated_movies, get_rated_shows
 from .tasks import import_trakt_data_task
 from .logger import logger, mask_sensitive
@@ -21,26 +21,26 @@ def movie_search(request):
     try:
         settings_obj = UserSettings.objects.get(user=request.user)
         tmdb_api_key = settings_obj.tmdb_api_key
+        user_language = get_tmdb_language(settings_obj.language)
     except UserSettings.DoesNotExist:
-        tmdb_api_key = None
+        return render(request, 'catalog/search.html')
 
-    if not tmdb_api_key:
-        return render(request, 'catalog/search.html', {'error': 'Please configure TMDB API Key in settings'})
+    query = request.GET.get('query', '').strip()
+    results = []
+    is_in_collection = {}
 
-    if request.META.get('HTTP_HX_REQUEST') and 'query' in request.GET:
-        query = request.GET.get('query')
-        if query:
-            results = search_movies(query, tmdb_api_key)
-            # Add is_in_collection flag
-            for result in results:
-                movie_exists = Movie.objects.filter(tmdb_id=result['id']).exists()
-                if movie_exists:
-                    movie = Movie.objects.get(tmdb_id=result['id'])
-                    result['is_in_collection'] = UserRating.objects.filter(user=request.user, movie=movie).exists()
-                else:
-                    result['is_in_collection'] = False
-            return render(request, 'catalog/partials/search_results.html', {'results': results})
-        else:
+    if query:
+        results = search_movies(query, tmdb_api_key, user_language)
+        # Add is_in_collection flag
+        for result in results:
+            movie_exists = Movie.objects.filter(tmdb_id=result['id']).exists()
+            if movie_exists:
+                movie = Movie.objects.get(tmdb_id=result['id'])
+                result['is_in_collection'] = UserRating.objects.filter(user=request.user, movie=movie).exists()
+            else:
+                result['is_in_collection'] = False
+        return render(request, 'catalog/partials/search_results.html', {'results': results})
+    else:
             return render(request, 'catalog/partials/search_results.html', {'results': []})
     return render(request, 'catalog/search.html')
 
@@ -50,6 +50,7 @@ def add_movie(request, media_type, tmdb_id):
     try:
         settings_obj = UserSettings.objects.get(user=request.user)
         tmdb_api_key = settings_obj.tmdb_api_key
+        user_language = get_tmdb_language(settings_obj.language)
     except UserSettings.DoesNotExist:
         return HttpResponse('<p>Please configure TMDB API Key in settings</p>', status=400)
 
@@ -57,7 +58,7 @@ def add_movie(request, media_type, tmdb_id):
         return HttpResponse('<p>Please configure TMDB API Key in settings</p>', status=400)
 
     if request.method in ['POST', 'PUT']:
-        movie_data = get_movie_details(media_type, tmdb_id, tmdb_api_key)
+        movie_data = get_movie_details(media_type, tmdb_id, tmdb_api_key, user_language)
         if not movie_data:
             return HttpResponse('<p>Data loading error.</p>', status=500)
         title = movie_data.get('title', movie_data.get('name', 'Unknown'))
@@ -166,8 +167,9 @@ def user_settings(request):
         settings_obj.tmdb_api_key = tmdb_api_key
         settings_obj.trakt_username = trakt_username
         settings_obj.trakt_client_id = trakt_client_id
+        settings_obj.language = request.POST.get('language', 'en')
         settings_obj.save()
-        messages.success(request, 'Настройки сохранены!')
+        messages.success(request, 'Settings saved successfully!')
         return redirect('catalog:user_settings')
 
     return render(request, 'catalog/user_settings.html', {'settings': settings_obj})
@@ -181,6 +183,7 @@ def import_from_trakt(request):
         username = settings_obj.trakt_username
         trakt_client_id = settings_obj.trakt_client_id
         tmdb_key = settings_obj.tmdb_api_key
+        user_language = settings_obj.language
     except UserSettings.DoesNotExist:
         if request.META.get('HTTP_HX_REQUEST') or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'error': 'Сначала настройте API ключи'}, status=400)
@@ -220,11 +223,12 @@ def import_from_trakt(request):
 
     # Запускаем фоновую задачу
     import_trakt_data_task(
-        task_id=task_id,
+        task_id=str(task.task_id),
         user_id=request.user.id,
         username=username,
         client_id=trakt_client_id,
-        tmdb_key=tmdb_key
+        tmdb_key=tmdb_key,
+        language=user_language
     )
 
     # Проверяем, AJAX ли запрос

@@ -1,3 +1,4 @@
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
@@ -104,16 +105,16 @@
         <ul>
             <li><strong><a href="{% url 'catalog:home' %}">NestFlix</a></strong></li>
         </ul>
-         <ul>
+          <ul>
               {% if user.is_authenticated %}
-                  <li><a href="{% url 'catalog:movie_search' %}">Add Movie</a></li>
-                  <li><a href="{% url 'catalog:user_settings' %}">Settings</a></li>
+                  <li><a href="{% url 'catalog:movie_search' %}">{% trans "Add Movie" %}</a></li>
+                  <li><a href="{% url 'catalog:user_settings' %}">{% trans "Settings" %}</a></li>
                   <li id="import-indicator" style="display: none;">
                       <div style="width: 16px; height: 16px; border: 2px solid var(--muted); border-top: 2px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite;"></div>
                   </li>
-                   <li><a href="{% url 'logout' %}?next={% url 'catalog:home' %}">Logout</a></li>
+                   <li><a href="{% url 'logout' %}?next={% url 'catalog:home' %}">{% trans "Logout" %}</a></li>
               {% else %}
-                 <li style="margin-left: auto;"><a href="{% url 'login' %}" style="background: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: 4px;">Login</a></li>
+                 <li style="margin-left: auto;"><a href="{% url 'login' %}" style="background: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: 4px;">{% trans "Login" %}</a></li>
              {% endif %}
          </ul>
     </nav>
@@ -147,8 +148,8 @@
 
                         showNotification(
                             data.status === 'completed' ?
-                            'Import completed successfully!' :
-                            'Import error: ' + (data.error_message || 'Unknown error')
+                            '{% trans "Import completed successfully!" %}' :
+                            '{% trans "Import error" %}: ' + (data.error_message || '{% trans "Unknown error" %}')
                         );
 
                         localStorage.removeItem('active_import_task');
