@@ -141,14 +141,18 @@ def process_plex_event(user, event, payload):
             defaults={'watched_at': timezone.now()}
         )
         
-        if not rating_created and not user_rating.watched_at:
+        if not rating_created:
+            # Update watched_at date on every scrobble event
+            old_watched_at = user_rating.watched_at
             user_rating.watched_at = timezone.now()
             user_rating.save()
-            logger.info(f"Marked '{title}' as watched for {user.username}")
-        elif rating_created:
-            logger.info(f"Added '{title}' as watched for {user.username}")
+            
+            if old_watched_at:
+                logger.info(f"Updated watched date for '{title}' for {user.username} (previous: {old_watched_at.strftime('%Y-%m-%d %H:%M')})")
+            else:
+                logger.info(f"Marked '{title}' as watched for {user.username}")
         else:
-            logger.debug(f"'{title}' already marked as watched for {user.username}")
+            logger.info(f"Added '{title}' as watched for {user.username}")
             
     elif event == 'media.play':
         user_rating, rating_created = UserRating.objects.get_or_create(

@@ -42,6 +42,25 @@ class PlexUtilsTest(TestCase):
         tmdb_id = extract_tmdb_id_from_plex_guid('')
         self.assertIsNone(tmdb_id)
 
+    def test_extract_tmdb_id_ignores_tvdb(self):
+        guid = 'plex://show/5fd2a1b82de5fd002dd4c7b1'
+        guid_list = [
+            {'id': 'tvdb://5127547'},
+            {'id': 'imdb://tt1234567'}
+        ]
+        tmdb_id = extract_tmdb_id_from_plex_guid(guid, guid_list)
+        self.assertIsNone(tmdb_id)
+
+    def test_extract_tmdb_id_prefers_tmdb_over_others(self):
+        guid = 'plex://show/5fd2a1b82de5fd002dd4c7b1'
+        guid_list = [
+            {'id': 'tvdb://5127547'},
+            {'id': 'tmdb://88888'},
+            {'id': 'imdb://tt1234567'}
+        ]
+        tmdb_id = extract_tmdb_id_from_plex_guid(guid, guid_list)
+        self.assertEqual(tmdb_id, 88888)
+
     @patch('catalog.plex_utils.get_movie_details')
     def test_process_plex_event_movie_scrobble(self, mock_get_details):
         mock_get_details.return_value = {
@@ -157,6 +176,47 @@ class PlexUtilsTest(TestCase):
 
         result = process_plex_event(self.user, 'media.pause', payload)
         self.assertFalse(result)
+
+    @patch('catalog.plex_utils.get_movie_details')
+    def test_process_plex_event_updates_watched_date(self, mock_get_details):
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        mock_get_details.return_value = {
+            'title': 'Test Movie',
+            'overview': 'Test overview'
+        }
+
+        # First scrobble
+        payload = {
+            'event': 'media.scrobble',
+            'Metadata': {
+                'type': 'movie',
+                'guid': 'tmdb://99999',
+                'title': 'Test Movie',
+                'Guid': []
+            }
+        }
+
+        result = process_plex_event(self.user, 'media.scrobble', payload)
+        self.assertTrue(result)
+
+        movie = Movie.objects.get(tmdb_id=99999)
+        user_rating = UserRating.objects.get(user=self.user, movie=movie)
+        first_watched_at = user_rating.watched_at
+        self.assertIsNotNone(first_watched_at)
+
+        # Second scrobble (simulate watching again later)
+        import time
+        time.sleep(0.1)  # Small delay to ensure different timestamp
+        
+        result = process_plex_event(self.user, 'media.scrobble', payload)
+        self.assertTrue(result)
+
+        user_rating.refresh_from_db()
+        second_watched_at = user_rating.watched_at
+        self.assertIsNotNone(second_watched_at)
+        self.assertGreater(second_watched_at, first_watched_at)
 
     @patch('catalog.plex_utils.get_movie_details')
     def test_process_plex_event_no_tmdb_api_key(self, mock_get_details):

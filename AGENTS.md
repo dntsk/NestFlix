@@ -51,9 +51,22 @@
   - `UserSettings`: fields `plex_webhook_token`, `plex_webhook_enabled`, `plex_webhook_created_at`
   - `PlexWebhookEvent`: logs all webhook events for audit
 - **Processing**: `catalog/plex_utils.py`
-  - `extract_tmdb_id_from_plex_guid()` - parse TMDB ID from Plex GUID
-  - `process_plex_event()` - handle events (media.play, media.scrobble)
+  - `extract_tmdb_id_from_plex_guid(guid, guid_list=None)` - parse TMDB ID from Plex GUID or Guid array
+  - `process_plex_event(user, event, payload)` - handle events (media.play, media.scrobble)
   - `log_webhook_event()` - save events to DB
+- **Supported Events**:
+  - `media.play`: Add content to collection (without watched status)
+  - `media.scrobble`: Mark as watched and update watched_at date
+  - **Important**: Every scrobble event updates watched_at, so rewatching moves content to top of library
+- **Supported Media Types**:
+  - Movies: GUID formats `tmdb://`, `com.plexapp.agents.themoviedb://`
+  - TV Shows: Extract TMDB ID from show (grandparent) GUID or episode Guid array
+  - Episodes: Automatically detect parent show and track as TV series
+- **GUID Formats**:
+  - Direct: `tmdb://12345`, `com.plexapp.agents.themoviedb://12345?lang=en`
+  - Plex native: `plex://movie/...`, `plex://episode/...` (requires Guid array with TMDB ID)
+  - **Validation**: IDs > 10,000,000 are rejected (likely TVDB IDs)
+  - **Filtering**: Only TMDB IDs extracted, TVDB/IMDB/etc ignored
 - **Security**:
   - Unique UUID token for each user
   - All requests logged
