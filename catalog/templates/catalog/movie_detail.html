@@ -26,13 +26,13 @@
 
         {% if vote_average %}
             <div style="margin: 0 0 0.5rem 0;">
-                <strong style="color: var(--primary);">{% trans "TMDB Rating" %}:</strong> <span style="color: var(--accent); font-weight: bold;">{{ vote_average }}/10</span>
+                <strong style="color: var(--primary);">{% trans "TMDB Rating" %}:</strong> <span style="color: var(--accent); font-weight: bold;">{{ vote_average|floatformat:1 }}/10</span>
             </div>
         {% endif %}
 
         {% if user_rating.rating %}
             <div style="margin: 0 0 1rem 0;">
-                <strong style="color: var(--primary);">{% trans "Your Rating" %}:</strong> <span style="color: var(--accent); font-weight: bold;">{{ user_rating.rating }}/10</span>
+                <strong style="color: var(--primary);">{% trans "Your Rating" %}:</strong> <span style="color: var(--accent); font-weight: bold;">{{ user_rating.rating|floatformat:1 }}/10</span>
             </div>
         {% endif %}
 
