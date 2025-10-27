@@ -15,9 +15,9 @@
 
 {% block og_type %}{% if movie.media_type == 'tv' %}video.tv_show{% else %}video.movie{% endif %}{% endblock %}
 
-{% block og_image %}{% if poster_path %}https://image.tmdb.org/t/p/w780{{ poster_path }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'catalog/images/og-image.png' %}{% endif %}{% endblock %}
+{% block og_image %}{% if movie.poster_file %}{{ request.scheme }}://{{ request.get_host }}{{ movie.poster_file.url }}{% elif poster_path %}https://image.tmdb.org/t/p/w780{{ poster_path }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'catalog/images/og-image.png' %}{% endif %}{% endblock %}
 
-{% block twitter_image %}{% if poster_path %}https://image.tmdb.org/t/p/w780{{ poster_path }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'catalog/images/og-image.png' %}{% endif %}{% endblock %}
+{% block twitter_image %}{% if movie.poster_file %}{{ request.scheme }}://{{ request.get_host }}{{ movie.poster_file.url }}{% elif poster_path %}https://image.tmdb.org/t/p/w780{{ poster_path }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'catalog/images/og-image.png' %}{% endif %}{% endblock %}
 
 {% block og_image_width %}780{% endblock %}
 {% block og_image_height %}1170{% endblock %}
