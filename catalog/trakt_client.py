@@ -11,7 +11,8 @@ def _get_trakt_headers(client_id: str) -> dict:
         'Content-Type': 'application/json',
         'trakt-api-version': '2',
         'trakt-api-key': client_id,
-        'User-Agent': 'NestFlix/1.0 (Movie Tracking Application)',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
     }
 
 def get_watched_movies(username: str, client_id: str) -> list[dict]:

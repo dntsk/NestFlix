@@ -35,8 +35,10 @@ def download_tmdb_poster(movie, size='w300', force=False):
         logger.info(f"Downloading poster for {movie.title} from {poster_url}")
         
         headers = {
-            'User-Agent': 'NestFlix/1.0 (Movie Tracking Application)',
-            'Accept': 'image/*',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Referer': 'https://www.themoviedb.org/',
         }
         
         response = requests_get(poster_url, headers=headers, timeout=10)

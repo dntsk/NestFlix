@@ -5,8 +5,9 @@ from .http_client import requests_get
 
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
 TMDB_HEADERS = {
-    'User-Agent': 'NestFlix/1.0 (Movie Tracking Application)',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Accept': 'application/json',
+    'Accept-Language': 'en-US,en;q=0.9',
 }
 
 def get_tmdb_language(user_language: str) -> str:
