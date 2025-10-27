@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /settings/
+Disallow: /webhook/
+Disallow: /import/
+
+Sitemap: /sitemap.xml

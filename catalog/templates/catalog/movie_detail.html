@@ -1,8 +1,26 @@
 {% extends 'catalog/base.html' %}
 {% load i18n %}
+{% load static %}
 {% load poster_tags %}
 
-{% block title %}{{ movie.title }}{% endblock %}
+{% block title %}{{ title|escape }} - NestFlix{% endblock %}
+
+{% block og_title %}{{ title|escape }}{% if release_date %} ({{ release_date|slice:":4" }}){% endif %}{% endblock %}
+
+{% block og_description %}{% if overview %}{{ overview|truncatewords:30|escape }}{% else %}{% trans "Watch" %} {{ title|escape }} {% trans "on NestFlix" %}{% endif %}{% endblock %}
+
+{% block twitter_title %}{{ title|escape }}{% if release_date %} ({{ release_date|slice:":4" }}){% endif %}{% endblock %}
+
+{% block twitter_description %}{% if overview %}{{ overview|truncatewords:30|escape }}{% else %}{% trans "Watch" %} {{ title|escape }} {% trans "on NestFlix" %}{% endif %}{% endblock %}
+
+{% block og_type %}{% if movie.media_type == 'tv' %}video.tv_show{% else %}video.movie{% endif %}{% endblock %}
+
+{% block og_image %}{% if poster_path %}https://image.tmdb.org/t/p/w780{{ poster_path }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'catalog/images/og-image.png' %}{% endif %}{% endblock %}
+
+{% block twitter_image %}{% if poster_path %}https://image.tmdb.org/t/p/w780{{ poster_path }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'catalog/images/og-image.png' %}{% endif %}{% endblock %}
+
+{% block og_image_width %}780{% endblock %}
+{% block og_image_height %}1170{% endblock %}
 
 {% block content %}
 <h1>{{ title|escape }}</h1>
