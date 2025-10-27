@@ -7,6 +7,7 @@ NestFlix - is web application built with Django for tracking watched movies, man
 - **Personal Movie Library**: Add, rate and track watched movies
 - **Public Library**: View popular movies by average user ratings
 - **Movie Search**: TMDB API integration for searching and fetching movie information
+- **Local Poster Caching**: Automatic local caching of movie posters with fallback support
 - **Import from Trakt.tv**: Sync watched movies and ratings data
 - **Plex Webhooks**: Automatic tracking of views from Plex Media Server (requires Plex Pass)
 - **Settings Management**: Configure API keys for TMDB, Trakt and Plex webhooks
@@ -129,7 +130,37 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 - **Movie Search**: Use search bar to find movies
 - **Adding a Movie**: Click on a movie in search results to add to collection
 - **Rating Movies**: Rate and mark watched movies
-- **Импорт из Trakt**: Sync data from Trakt.tv account
+- **Import from Trakt**: Sync data from Trakt.tv account
+
+### Poster Caching Management
+
+NestFlix automatically caches movie posters locally to improve performance and reliability:
+
+**Automatic Caching:**
+- Posters are cached automatically when movies are added via UI
+- Plex webhook integration also triggers automatic poster caching
+- Cached posters are refreshed every 30 days
+
+**Manual Management Commands:**
+
+```bash
+# Cache missing posters (first 50)
+python manage.py cache_posters --limit 50
+
+# Force re-cache all posters
+python manage.py cache_posters --all --force
+
+# Show cache statistics
+python manage.py poster_stats
+
+# Remove orphaned poster files
+python manage.py cleanup_posters
+```
+
+**Fallback System:**
+1. Local cached poster (fastest)
+2. TMDB CDN (if cache expired or missing)
+3. Placeholder image (if poster unavailable)
 
 
 ## Project Structure
@@ -210,21 +241,37 @@ nestflix/
 
 ### Docker
 
-For Docker deployment:
+**Quick Start:**
 
-```dockerfile
-FROM python:3.11-slim
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
 
-WORKDIR /app
+# Run migrations (first time only)
+docker-compose exec web python manage.py migrate
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+# Create superuser (first time only)
+docker-compose exec web python manage.py createsuperuser
 
-COPY . .
+# Cache posters (optional)
+docker-compose exec web python manage.py cache_posters --limit 50
+```
 
-RUN python manage.py collectstatic --noinput
+**Persistent Data:**
 
-EXPOSE 8000
+Docker Compose configuration includes volumes for:
+- `./db` - SQLite database
+- `./media` - Cached movie posters
+- `./logs` - Application logs
 
-CMD ["gunicorn", "nestflix.wsgi:application", "--bind", "0.0.0.0:8000"]
+All data persists between container restarts.
+
+**Environment Variables:**
+
+Create `.env` file or use environment variables in `docker-compose.yaml`:
+```env
+SECRET_KEY=your_django_secret_key_here
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+CSRF_TRUSTED_ORIGINS=http://localhost:8000
 ```

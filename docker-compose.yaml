@@ -7,6 +7,8 @@ services:
       - "8000:8000"
     volumes:
       - ./db:/app/db
+      - ./media:/app/media
+      - ./logs:/app/logs
     environment:
       - DEBUG=True
       - SECRET_KEY=${SECRET_KEY:-django-insecure-change-me-in-production}

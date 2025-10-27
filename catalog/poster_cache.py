@@ -32,7 +32,13 @@ def download_tmdb_poster(movie, size='w300', force=False):
     
     try:
         logger.info(f"Downloading poster for {movie.title} from {poster_url}")
-        response = requests.get(poster_url, timeout=10)
+        
+        headers = {
+            'User-Agent': 'NestFlix/1.0 (Movie Tracking Application)',
+            'Accept': 'image/*',
+        }
+        
+        response = requests.get(poster_url, headers=headers, timeout=10)
         response.raise_for_status()
         
         filename = f"tmdb_{movie.tmdb_id}_{size}.jpg"
