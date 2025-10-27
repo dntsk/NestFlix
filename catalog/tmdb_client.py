@@ -1,6 +1,7 @@
 import requests
 from django.conf import settings
 from .logger import logger, mask_sensitive
+from .http_client import requests_get
 
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
 TMDB_HEADERS = {
@@ -28,7 +29,7 @@ def search_movies(query: str, api_key: str, language: str = 'en-US') -> list[dic
             'query': query,
             'language': language,
         }
-        response = requests.get(url, params=params, headers=TMDB_HEADERS)
+        response = requests_get(url, params=params, headers=TMDB_HEADERS)
         response.raise_for_status()
         data = response.json()
         movie_count = len(data.get('results', []))
@@ -53,7 +54,7 @@ def search_movies(query: str, api_key: str, language: str = 'en-US') -> list[dic
             'query': query,
             'language': language,
         }
-        response = requests.get(url, params=params, headers=TMDB_HEADERS)
+        response = requests_get(url, params=params, headers=TMDB_HEADERS)
         response.raise_for_status()
         data = response.json()
         tv_count = len(data.get('results', []))
@@ -83,7 +84,7 @@ def get_movie_details(media_type: str, tmdb_id: int, api_key: str, language: str
             'language': language,
         }
         logger.debug(f"Fetching TMDB details: {media_type}/{tmdb_id} with language: {language}")
-        response = requests.get(url, params=params, headers=TMDB_HEADERS)
+        response = requests_get(url, params=params, headers=TMDB_HEADERS)
         response.raise_for_status()
         data = response.json()
         data['media_type'] = media_type

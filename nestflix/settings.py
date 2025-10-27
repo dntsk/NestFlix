@@ -168,3 +168,23 @@ LOGOUT_REDIRECT_URL = '/'
 CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)
 CSRF_COOKIE_HTTPONLY = True
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='', cast=lambda v: [s.strip() for s in v.split(',') if s.strip()])
+
+# Proxy Configuration
+PROXY_ENABLED = config('PROXY_ENABLED', default=False, cast=bool)
+SOCKS_PROXY = config('SOCKS_PROXY', default='')
+HTTP_PROXY = config('HTTP_PROXY', default='')
+HTTPS_PROXY = config('HTTPS_PROXY', default='')
+
+# Prepare proxies dict for requests library
+PROXIES = {}
+if PROXY_ENABLED:
+    if SOCKS_PROXY:
+        PROXIES = {
+            'http': SOCKS_PROXY,
+            'https': SOCKS_PROXY,
+        }
+    elif HTTP_PROXY or HTTPS_PROXY:
+        if HTTP_PROXY:
+            PROXIES['http'] = HTTP_PROXY
+        if HTTPS_PROXY:
+            PROXIES['https'] = HTTPS_PROXY

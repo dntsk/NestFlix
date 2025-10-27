@@ -101,6 +101,35 @@
   - `MEDIA_URL` - URL prefix for media files
 - **File Format**: `tmdb_{tmdb_id}_w300.jpg`
 
+## Proxy Configuration
+- **Support**: SOCKS5, HTTP, HTTPS proxies
+- **Configuration**: Environment variables in `.env` or `settings.py`
+- **Module**: `catalog/http_client.py` - centralized proxy handling
+- **Variables**:
+  - `PROXY_ENABLED` - Enable/disable proxy (True/False)
+  - `SOCKS_PROXY` - SOCKS5 proxy URL (e.g., `socks5://127.0.0.1:1080`)
+  - `HTTP_PROXY` - HTTP proxy URL
+  - `HTTPS_PROXY` - HTTPS proxy URL
+- **Authentication**: Supported via URL format `protocol://user:pass@host:port`
+- **Logging**: Proxy usage logged at DEBUG level
+- **Affected Components**:
+  - TMDB API requests (movie data, search)
+  - Trakt API requests (import data)
+  - Poster downloads from TMDB CDN
+- **Docker**: Use `host.docker.internal` to access host's proxy from container
+- **Testing**:
+  ```bash
+  # Enable proxy
+  export PROXY_ENABLED=True
+  export SOCKS_PROXY=socks5://127.0.0.1:1080
+  
+  # Test
+  python manage.py cache_posters --limit 1
+  
+  # Check logs
+  tail -f logs/nestflix.log | grep proxy
+  ```
+
 ## Secure Code Rules
 - **Sensitive Data Protection**: API keys and Client IDs must be masked in logs (first 4 and last 4 characters)
 - **Logging**: 

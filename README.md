@@ -275,3 +275,52 @@ DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 CSRF_TRUSTED_ORIGINS=http://localhost:8000
 ```
+
+### Proxy Configuration
+
+NestFlix supports routing all HTTP/HTTPS requests through a proxy server.
+
+**SOCKS5 Proxy (Recommended):**
+
+```bash
+# In .env file
+PROXY_ENABLED=True
+SOCKS_PROXY=socks5://127.0.0.1:1080
+```
+
+**HTTP/HTTPS Proxy:**
+
+```bash
+# In .env file
+PROXY_ENABLED=True
+HTTP_PROXY=http://proxy.example.com:8080
+HTTPS_PROXY=https://proxy.example.com:8080
+```
+
+**With Authentication:**
+
+```bash
+SOCKS_PROXY=socks5://username:password@127.0.0.1:1080
+# or
+HTTP_PROXY=http://username:password@proxy.example.com:8080
+```
+
+**Docker Usage:**
+
+```bash
+# In .env file or docker-compose.yaml environment
+PROXY_ENABLED=True
+SOCKS_PROXY=socks5://host.docker.internal:1080
+```
+
+**Note:** Use `host.docker.internal` to access proxy running on host machine from Docker container.
+
+**Testing Proxy:**
+
+```bash
+# Test poster download
+python manage.py cache_posters --limit 1
+
+# Check logs for proxy usage
+tail -f logs/nestflix.log | grep proxy
+```

@@ -1,10 +1,11 @@
-import requests
 import os
+import requests
 from pathlib import Path
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from django.conf import settings
 from .logger import logger
+from .http_client import requests_get
 
 
 def download_tmdb_poster(movie, size='w300', force=False):
@@ -38,7 +39,7 @@ def download_tmdb_poster(movie, size='w300', force=False):
             'Accept': 'image/*',
         }
         
-        response = requests.get(poster_url, headers=headers, timeout=10)
+        response = requests_get(poster_url, headers=headers, timeout=10)
         response.raise_for_status()
         
         filename = f"tmdb_{movie.tmdb_id}_{size}.jpg"
