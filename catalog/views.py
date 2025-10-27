@@ -84,24 +84,23 @@ def add_movie(request, media_type, tmdb_id):
         return HttpResponse('<p>Successfully added!</p>')
     return HttpResponse('Error', status=400)
 
-@login_required
 def movie_detail(request, tmdb_id):
     movie = get_object_or_404(Movie, tmdb_id=tmdb_id)
-    user_rating, created = UserRating.objects.get_or_create(user=request.user, movie=movie)
-
-    # Get user settings for TMDB API key (for future use if needed)
-    try:
-        settings_obj = UserSettings.objects.get(user=request.user)
-    except UserSettings.DoesNotExist:
-        settings_obj = None
-
-    if request.method == 'POST':
-        rating = request.POST.get('rating')
-        if rating:
-            user_rating.rating = int(rating)
-            user_rating.save()
-            messages.success(request, 'Rating updated!')
-            return redirect('catalog:movie_detail', tmdb_id=tmdb_id)
+    
+    # Get user rating only for authenticated users
+    user_rating = None
+    if request.user.is_authenticated:
+        user_rating, created = UserRating.objects.get_or_create(user=request.user, movie=movie)
+        
+        # Handle rating update (only for authenticated users)
+        if request.method == 'POST':
+            rating = request.POST.get('rating')
+            if rating:
+                user_rating.rating = int(rating)
+                user_rating.save()
+                messages.success(request, 'Rating updated!')
+                return redirect('catalog:movie_detail', tmdb_id=tmdb_id)
+    
     # Prepare data for template
     data = movie.data or {}
     title = data.get('title', data.get('name', movie.title))

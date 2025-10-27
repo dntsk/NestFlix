@@ -43,7 +43,7 @@
             </div>
         {% endif %}
 
-        {% if user_rating.rating %}
+        {% if user.is_authenticated and user_rating.rating %}
             <div style="margin: 0 0 1rem 0;">
                 <strong style="color: var(--primary);">{% trans "Your Rating" %}:</strong> <span style="color: var(--accent); font-weight: bold;">{{ user_rating.rating|floatformat:1 }}/10</span>
             </div>
@@ -56,7 +56,8 @@
             </div>
         {% endif %}
 
-        <!-- Rating form -->
+        <!-- Rating form (only for authenticated users) -->
+        {% if user.is_authenticated %}
         <div style="background: var(--secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); margin-top: 1rem;">
             <h3 style="margin: 0 0 1rem 0; color: var(--primary);">{% trans "Change Rating" %}</h3>
             <form method="post" style="display: flex; align-items: center; gap: 1rem;">
@@ -69,6 +70,7 @@
                 <button type="submit" style="padding: 0.4rem 1rem; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; align-self: end; font-size: 0.9rem; width: auto; flex-shrink: 0;">{% trans "Save" %}</button>
             </form>
         </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
