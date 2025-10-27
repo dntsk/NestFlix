@@ -7,9 +7,38 @@ class Movie(models.Model):
     media_type = models.CharField(max_length=10, default='movie')  # 'movie' or 'tv'
     title = models.CharField(max_length=255)
     data = models.JSONField(null=True, blank=True)  # Cache for TMDB data
+    
+    poster_file = models.ImageField(
+        upload_to='posters/', 
+        null=True, 
+        blank=True,
+        verbose_name="Cached Poster"
+    )
+    poster_cached_at = models.DateTimeField(
+        null=True, 
+        blank=True,
+        verbose_name="Poster Cache Date"
+    )
 
     def __str__(self):
         return self.title
+    
+    def get_poster_url(self):
+        """Get poster URL - local first, then TMDB fallback"""
+        if self.poster_file:
+            return self.poster_file.url
+        elif self.data and self.data.get('poster_path'):
+            return f"https://image.tmdb.org/t/p/w300{self.data['poster_path']}"
+        return None
+    
+    def needs_poster_refresh(self):
+        """Check if poster cache needs refresh"""
+        if not self.poster_cached_at:
+            return True
+        from datetime import timedelta
+        from django.conf import settings
+        age = timezone.now() - self.poster_cached_at
+        return age.days > getattr(settings, 'POSTER_CACHE_DAYS', 30)
 
 class UserRating(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

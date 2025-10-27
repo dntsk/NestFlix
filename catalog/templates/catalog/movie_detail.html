@@ -1,5 +1,6 @@
 {% extends 'catalog/base.html' %}
 {% load i18n %}
+{% load poster_tags %}
 
 {% block title %}{{ movie.title }}{% endblock %}
 
@@ -9,13 +10,7 @@
 <div style="display: grid; grid-template-columns: 300px 1fr; gap: 2rem; align-items: start;">
     <!-- Left column - poster -->
     <div>
-        {% if poster_path %}
-            <img src="https://image.tmdb.org/t/p/w300{{ poster_path }}" alt="{{ title }}" style="width: 100%; max-width: 300px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-        {% else %}
-            <div style="width: 300px; height: 450px; background: var(--border); display: flex; align-items: center; justify-content: center; border-radius: 8px; color: var(--muted);">
-                {% trans "No Poster" %}
-            </div>
-        {% endif %}
+        {% movie_poster movie size='w300' css_class='poster-detail' %}
     </div>
 
     <!-- Right column - information -->

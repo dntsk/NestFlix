@@ -74,6 +74,33 @@
   - Can be disabled/regenerated
   - Token masking in logs
 
+## Poster Caching System
+- **Storage**: Local filesystem in `media/posters/`
+- **Models**: `Movie.poster_file` (ImageField), `Movie.poster_cached_at` (DateTimeField)
+- **Methods**:
+  - `Movie.get_poster_url()` - Get poster URL with fallback logic
+  - `Movie.needs_poster_refresh()` - Check if poster needs re-caching (30 days default)
+- **Template Tags**: `catalog/templatetags/poster_tags.py`
+  - `{% poster_url movie %}` - Returns poster URL string
+  - `{% movie_poster movie size='w300' css_class='...' %}` - Renders complete poster HTML with fallback
+- **Fallback Logic**: Local cache → TMDB CDN → Placeholder
+- **Background Tasks**: `catalog/tasks.py`
+  - `cache_poster_task(movie_id)` - Cache single poster
+  - `bulk_cache_posters_task(batch_size=10)` - Bulk cache operation
+- **Management Commands**:
+  - `python manage.py cache_posters [--all] [--limit N] [--force]` - Cache posters from TMDB
+  - `python manage.py cleanup_posters` - Remove orphaned poster files
+  - `python manage.py poster_stats` - Show cache statistics
+- **Auto-caching**: Posters automatically cached when:
+  - Movie added via UI (`catalog/views.py:add_movie`)
+  - Movie added/updated via Plex webhook (`catalog/plex_utils.py:process_plex_event`)
+- **Configuration**: `nestflix/settings.py`
+  - `POSTER_CACHE_DAYS = 30` - Days before re-download
+  - `POSTER_CACHE_SIZE = 'w300'` - TMDB image size
+  - `MEDIA_ROOT` - Base path for media files
+  - `MEDIA_URL` - URL prefix for media files
+- **File Format**: `tmdb_{tmdb_id}_w300.jpg`
+
 ## Secure Code Rules
 - **Sensitive Data Protection**: API keys and Client IDs must be masked in logs (first 4 and last 4 characters)
 - **Logging**: 

@@ -9,7 +9,7 @@ from datetime import datetime
 from .models import Movie, UserRating, UserSettings, ImportTask
 from .tmdb_client import search_movies, get_movie_details, get_tmdb_language
 from .trakt_client import get_watched_movies, get_watched_shows, get_rated_movies, get_rated_shows
-from .tasks import import_trakt_data_task
+from .tasks import import_trakt_data_task, cache_poster_task
 from .logger import logger, mask_sensitive
 import time
 import re
@@ -75,6 +75,12 @@ def add_movie(request, media_type, tmdb_id):
             movie.save()
         # Create UserRating if not exists
         UserRating.objects.get_or_create(user=request.user, movie=movie)
+        
+        # Schedule poster caching
+        if movie.needs_poster_refresh():
+            cache_poster_task(movie.tmdb_id)
+            logger.debug(f"Scheduled poster caching for movie {movie.tmdb_id}")
+        
         return HttpResponse('<p>Successfully added!</p>')
     return HttpResponse('Error', status=400)
 

@@ -137,6 +137,12 @@ def process_plex_event(user, event, payload):
     else:
         logger.info(f"Created new movie: {title}")
     
+    # Schedule poster caching in background
+    if movie.needs_poster_refresh():
+        from .tasks import cache_poster_task
+        cache_poster_task(movie.tmdb_id)
+        logger.debug(f"Scheduled poster caching for {title}")
+    
     if event == 'media.scrobble':
         user_rating, rating_created = UserRating.objects.get_or_create(
             user=user,

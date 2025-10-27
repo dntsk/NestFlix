@@ -5,6 +5,7 @@ from .models import ImportTask, Movie, UserRating
 from .trakt_client import get_watched_movies, get_watched_shows, get_rated_movies, get_rated_shows
 from .tmdb_client import get_movie_details, get_tmdb_language
 from .logger import logger, mask_sensitive
+from .poster_cache import download_tmdb_poster
 
 @background(schedule=0)
 def import_trakt_data_task(task_id, user_id, username, client_id, tmdb_key, language='en'):
@@ -160,3 +161,42 @@ def import_trakt_data_task(task_id, user_id, username, client_id, tmdb_key, lang
             logger.error(f"Task {task_id} marked as failed")
         else:
             logger.error("Task object not available for error handling")
+
+
+@background(schedule=0)
+def cache_poster_task(movie_id):
+    """
+    Background task to cache movie poster
+    """
+    try:
+        movie = Movie.objects.get(tmdb_id=movie_id)
+        success = download_tmdb_poster(movie)
+        
+        if success:
+            logger.info(f"Cached poster for {movie.title} (ID: {movie_id})")
+        else:
+            logger.warning(f"Failed to cache poster for {movie.title} (ID: {movie_id})")
+            
+    except Movie.DoesNotExist:
+        logger.error(f"Movie {movie_id} not found for poster caching")
+    except Exception as e:
+        logger.error(f"Error in cache_poster_task for movie {movie_id}: {e}")
+
+
+@background(schedule=0)
+def bulk_cache_posters_task(batch_size=10):
+    """
+    Background task to cache posters for movies without cached posters
+    """
+    movies_without_cache = Movie.objects.filter(
+        poster_file='',
+        data__isnull=False
+    )[:batch_size]
+    
+    cached_count = 0
+    for movie in movies_without_cache:
+        if download_tmdb_poster(movie):
+            cached_count += 1
+    
+    logger.info(f"Bulk cache completed: {cached_count}/{batch_size} posters cached")
+    return cached_count

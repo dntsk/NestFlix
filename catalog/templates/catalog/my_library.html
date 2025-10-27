@@ -1,5 +1,6 @@
 {% extends 'catalog/base.html' %}
 {% load i18n %}
+{% load poster_tags %}
 
 {% block title %}{% if is_authenticated %}{% trans "My Collection" %}{% else %}{% trans "Popular Movies" %}{% endif %}{% endblock %}
 
@@ -12,17 +13,9 @@
 <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
     {% for user_rating in page_obj %}
     <article style="text-align: center; padding: 1rem; background-color: #ffffff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s; display: flex; flex-direction: column;">
-        {% if user_rating.movie.data.poster_path %}
-            <a href="{% url 'catalog:movie_detail' user_rating.movie.tmdb_id %}" style="text-decoration: none;">
-                <img src="https://image.tmdb.org/t/p/w200{{ user_rating.movie.data.poster_path }}" alt="{{ user_rating.movie.title }}" style="width: 100%; max-width: 200px; border-radius: 8px; margin-bottom: 0.5rem; transition: transform 0.2s;">
-            </a>
-        {% else %}
-            <a href="{% url 'catalog:movie_detail' user_rating.movie.tmdb_id %}" style="text-decoration: none;">
-                <div style="width: 200px; height: 300px; background: var(--border); display: flex; align-items: center; justify-content: center; border-radius: 8px; margin: 0 auto 0.5rem; transition: transform 0.2s;">
-                    {% trans "No Poster" %}
-                </div>
-            </a>
-        {% endif %}
+        <a href="{% url 'catalog:movie_detail' user_rating.movie.tmdb_id %}" style="text-decoration: none;">
+            {% movie_poster user_rating.movie size='w200' css_class='poster-img' %}
+        </a>
         <h5 style="margin: 0.5rem 0;"><a href="{% url 'catalog:movie_detail' user_rating.movie.tmdb_id %}" style="text-decoration: none; color: var(--text);">{{ user_rating.movie.title }}</a></h5>
         {% if is_authenticated %}
             <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end;">

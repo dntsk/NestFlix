@@ -1,0 +1,31 @@
+{% if url %}
+    {% if 'poster-detail' in css_class %}
+    <img 
+        src="{{ url }}" 
+        alt="{{ title }}" 
+        class="{{ css_class }}"
+        loading="lazy"
+        data-source="{{ source }}"
+        style="width: 100%; max-width: 300px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
+    >
+    {% else %}
+    <img 
+        src="{{ url }}" 
+        alt="{{ title }}" 
+        class="{{ css_class }}"
+        loading="lazy"
+        data-source="{{ source }}"
+        style="width: 100%; max-width: 200px; border-radius: 8px; margin-bottom: 0.5rem; transition: transform 0.2s;"
+    >
+    {% endif %}
+{% else %}
+    {% if 'poster-detail' in css_class %}
+    <div style="width: 300px; height: 450px; background: var(--border); display: flex; align-items: center; justify-content: center; border-radius: 8px; color: var(--muted);">
+        No Poster
+    </div>
+    {% else %}
+    <div style="width: 200px; height: 300px; background: var(--border); display: flex; align-items: center; justify-content: center; border-radius: 8px; margin: 0 auto 0.5rem; transition: transform 0.2s;">
+        No Poster
+    </div>
+    {% endif %}
+{% endif %}
