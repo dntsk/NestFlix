@@ -58,6 +58,7 @@
   - `media.play`: Add content to collection (without watched status)
   - `media.scrobble`: Mark as watched and update watched_at date
   - **Important**: Every scrobble event updates watched_at, so rewatching moves content to top of library
+  - **Language**: TMDB metadata fetched in user's preferred language from UserSettings.language
 - **Supported Media Types**:
   - Movies: GUID formats `tmdb://`, `com.plexapp.agents.themoviedb://`
   - TV Shows: Extract TMDB ID from show (grandparent) GUID or episode Guid array

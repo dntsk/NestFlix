@@ -10,7 +10,8 @@ class PlexUtilsTest(TestCase):
         self.user = User.objects.create_user(username='testuser', password='password')
         self.user_settings = UserSettings.objects.create(
             user=self.user,
-            tmdb_api_key='test_tmdb_key_32_characters_long_'
+            tmdb_api_key='test_tmdb_key_32_characters_long_',
+            language='en'
         )
 
     def test_extract_tmdb_id_simple_tmdb_format(self):
@@ -217,6 +218,38 @@ class PlexUtilsTest(TestCase):
         second_watched_at = user_rating.watched_at
         self.assertIsNotNone(second_watched_at)
         self.assertGreater(second_watched_at, first_watched_at)
+
+    @patch('catalog.plex_utils.get_movie_details')
+    def test_process_plex_event_uses_user_language(self, mock_get_details):
+        mock_get_details.return_value = {
+            'title': 'Тестовый Фильм',
+            'overview': 'Описание на русском'
+        }
+        
+        # Set user language to Russian
+        self.user_settings.language = 'ru'
+        self.user_settings.save()
+
+        payload = {
+            'event': 'media.scrobble',
+            'Metadata': {
+                'type': 'movie',
+                'guid': 'tmdb://12345',
+                'title': 'Test Movie',
+                'Guid': []
+            }
+        }
+
+        result = process_plex_event(self.user, 'media.scrobble', payload)
+        self.assertTrue(result)
+
+        # Verify that get_movie_details was called with Russian language
+        mock_get_details.assert_called_once_with(
+            'movie', 
+            12345, 
+            'test_tmdb_key_32_characters_long_',
+            'ru-RU'  # Russian language code for TMDB
+        )
 
     @patch('catalog.plex_utils.get_movie_details')
     def test_process_plex_event_no_tmdb_api_key(self, mock_get_details):

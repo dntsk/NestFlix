@@ -1,7 +1,7 @@
 import re
 from django.utils import timezone
 from .models import Movie, UserRating, UserSettings, PlexWebhookEvent
-from .tmdb_client import get_movie_details
+from .tmdb_client import get_movie_details, get_tmdb_language
 from .logger import logger
 
 
@@ -110,7 +110,10 @@ def process_plex_event(user, event, payload):
         logger.warning(f"User {user.username} has no TMDB API key configured")
         return False
     
-    movie_data = get_movie_details(media_type, tmdb_id, settings.tmdb_api_key)
+    user_language = get_tmdb_language(settings.language)
+    logger.debug(f"Fetching TMDB data for {media_type}/{tmdb_id} with language: {user_language}")
+    
+    movie_data = get_movie_details(media_type, tmdb_id, settings.tmdb_api_key, user_language)
     if not movie_data:
         logger.error(f"Could not fetch TMDB data for {media_type}/{tmdb_id}")
         return False
