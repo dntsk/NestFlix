@@ -55,10 +55,11 @@ def process_plex_event(user, event, payload):
     Supported events:
     - media.scrobble: Mark as watched
     - media.play: Add to collection
+    - media.rate: Update rating
     """
     metadata = payload.get('Metadata', {})
     
-    if event not in ['media.scrobble', 'media.play']:
+    if event not in ['media.scrobble', 'media.play', 'media.rate']:
         logger.debug(f"Ignoring Plex event: {event}")
         return False
     
@@ -173,6 +174,33 @@ def process_plex_event(user, event, payload):
             logger.info(f"Added '{title}' to collection for {user.username}")
         else:
             logger.debug(f"'{title}' already in collection for {user.username}")
+    
+    elif event == 'media.rate':
+        # Extract rating from payload (Plex uses 0-10 scale)
+        plex_rating = metadata.get('userRating')
+        if plex_rating is None:
+            logger.warning(f"No rating found in media.rate event for '{title}'")
+            return False
+        
+        # Convert Plex rating (0-10) to our scale (1-10)
+        rating_value = int(plex_rating)
+        if rating_value < 1 or rating_value > 10:
+            logger.warning(f"Invalid rating value {rating_value} for '{title}'")
+            return False
+        
+        user_rating, rating_created = UserRating.objects.get_or_create(
+            user=user,
+            movie=movie
+        )
+        
+        old_rating = user_rating.rating
+        user_rating.rating = rating_value
+        user_rating.save()
+        
+        if old_rating:
+            logger.info(f"Updated rating for '{title}' for {user.username}: {old_rating} -> {rating_value}")
+        else:
+            logger.info(f"Set rating for '{title}' for {user.username}: {rating_value}")
     
     return True
 
