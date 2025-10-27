@@ -4,15 +4,20 @@ from .logger import logger, mask_sensitive
 
 TRAKT_BASE_URL = 'https://api.trakt.tv'
 
+def _get_trakt_headers(client_id: str) -> dict:
+    """Get common headers for Trakt API requests."""
+    return {
+        'Content-Type': 'application/json',
+        'trakt-api-version': '2',
+        'trakt-api-key': client_id,
+        'User-Agent': 'NestFlix/1.0 (Movie Tracking Application)',
+    }
+
 def get_watched_movies(username: str, client_id: str) -> list[dict]:
     """Get watched movies from Trakt.tv."""
     try:
         url = f"{TRAKT_BASE_URL}/users/{username}/watched/movies"
-        headers = {
-            'Content-Type': 'application/json',
-            'trakt-api-version': '2',
-            'trakt-api-key': client_id,
-        }
+        headers = _get_trakt_headers(client_id)
         logger.info(f"Requesting watched movies for user: {username}")
         logger.debug(f"Trakt API URL: {url}, client_id: {mask_sensitive(client_id)}")
         
@@ -43,11 +48,7 @@ def get_watched_shows(username: str, client_id: str) -> list[dict]:
     """Get watched TV shows from Trakt.tv."""
     try:
         url = f"{TRAKT_BASE_URL}/users/{username}/watched/shows"
-        headers = {
-            'Content-Type': 'application/json',
-            'trakt-api-version': '2',
-            'trakt-api-key': client_id,
-        }
+        headers = _get_trakt_headers(client_id)
         logger.info(f"Requesting watched shows for user: {username}")
         
         response = requests.get(url, headers=headers, timeout=30)
@@ -77,11 +78,7 @@ def get_rated_movies(username: str, client_id: str) -> list[dict]:
     """Get rated movies from Trakt.tv."""
     try:
         url = f"{TRAKT_BASE_URL}/users/{username}/ratings/movies"
-        headers = {
-            'Content-Type': 'application/json',
-            'trakt-api-version': '2',
-            'trakt-api-key': client_id,
-        }
+        headers = _get_trakt_headers(client_id)
         logger.info(f"Requesting rated movies for user: {username}")
         
         response = requests.get(url, headers=headers, timeout=30)
@@ -113,11 +110,7 @@ def get_rated_shows(username: str, client_id: str) -> list[dict]:
     """Get rated TV shows from Trakt.tv."""
     try:
         url = f"{TRAKT_BASE_URL}/users/{username}/ratings/shows"
-        headers = {
-            'Content-Type': 'application/json',
-            'trakt-api-version': '2',
-            'trakt-api-key': client_id,
-        }
+        headers = _get_trakt_headers(client_id)
         logger.info(f"Requesting rated shows for user: {username}")
         
         response = requests.get(url, headers=headers, timeout=30)
